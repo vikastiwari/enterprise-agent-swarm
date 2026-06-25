@@ -108,3 +108,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Root Cause:** When migrating from the mock fallback to the real `gemini-2.5-flash` model, the AI successfully parsed the intent into a structured DAG but assigned a logical (yet unsupported) agent name (`financial_system` instead of `BillingAgent`). Because `SupervisorAgent` hardcoded `task.agent().equals("BillingAgent")`, the task was completely skipped.
 - **Fix:** Updated the `HTNDagParser` system prompt to strictly enforce agent names: `"IMPORTANT: You MUST ONLY use the following exact agent names: 'BillingAgent' ... and 'SupportAgent' ..."`.
 
+## 23. NoSuchElementException during Tool Calling (spring-ai-google-genai 1.1.8)
+- **Issue:** When the `BillingAgent` invoked the MCP tools using Gemini 2.5 Flash, it threw a `java.util.NoSuchElementException: No value present` at `GoogleGenAiChatModel.responseCandidateToGeneration`.
+- **Root Cause:** In version 1.1.8 of `spring-ai-google-genai`, there is a bug parsing the LLM response if the model exclusively returns a Tool/Function Call *without* any accompanying text part. The parser attempts an `Optional.get()` on the text parts list and crashes.
+- **Fix:** Added an explicit instruction to the `BillingAgent` system prompt in `SupervisorAgent.java`: `"IMPORTANT: You must always include a short text message (like 'Checking billing info...') in your response BEFORE invoking any tools, to prevent parsing errors."` This guarantees a text part is generated alongside the tool call, satisfying the parser.
+

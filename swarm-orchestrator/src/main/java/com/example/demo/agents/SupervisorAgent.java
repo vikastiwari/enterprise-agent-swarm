@@ -30,7 +30,7 @@ public class SupervisorAgent {
             .defaultSystem("You are the Supervisor Agent. Given sub-task results, generate a final coherent response to the user.")
             .build();
         this.billingChatClient = chatClientBuilder
-            .defaultSystem("You are the Billing Agent. Provide concise billing information by using the billing tools available.")
+            .defaultSystem("You are the Billing Agent. Provide concise billing information by using the billing tools available. IMPORTANT: You must always include a short text message (like 'Checking billing info...') in your response BEFORE invoking any tools, to prevent parsing errors.")
             .defaultToolCallbacks(tools)
             .build();
     }

@@ -14,7 +14,8 @@ public class HTNDagParser {
 
     public HTNDagParser(ChatClient.Builder builder) {
         this.chatClient = builder
-                .defaultSystem("You are a Hierarchical Task Network (HTN) DAG parser. Break the user intent into a sequence of structured agent tasks.")
+                .defaultSystem("You are a Hierarchical Task Network (HTN) DAG parser. Break the user intent into a sequence of structured agent tasks. " +
+                        "IMPORTANT: You MUST ONLY use the following exact agent names: 'BillingAgent' (for balance, payments, money) and 'SupportAgent' (for technical issues, passwords, general help).")
                 .build();
     }
 

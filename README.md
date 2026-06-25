@@ -59,25 +59,29 @@ Our core Enterprise Swarm logic has roughly **80% total Instruction Coverage** (
 
 *The only things lightly covered are the basic Spring Boot Application runner and the ChatController (which just delegates).*
 
-## 🚀 Quick Start
+## 🚀 Quick Start (End-to-End Test)
+To test the entire Swarm Ecosystem locally, you will need 3 separate terminal tabs.
+
 1. Add your OpenAI API key to `swarm-orchestrator/src/main/resources/application.yml` (or export it as `OPENAI_API_KEY`).
-2. Build the entire multi-module project:
+2. Build the entire multi-module project (if you haven't yet):
    ```bash
    ./mvnw clean install -DskipTests
    ```
-3. Boot up the **Billing MCP Server**:
+3. **Terminal 1: Boot the Billing MCP Server**:
    ```bash
    cd billing-mcp-server
    ../mvnw spring-boot:run
    ```
-4. In a separate terminal, boot up the **Swarm Orchestrator**:
+4. **Terminal 2: Boot the Swarm Orchestrator**:
    ```bash
    cd swarm-orchestrator
    ../mvnw spring-boot:run
    ```
-5. Test the Multi-Agent Orchestrator via REST:
+5. **Terminal 3: Boot the React Dashboard UI**:
    ```bash
-   curl -X POST http://localhost:8080/api/chat \
-   -H "Content-Type: application/json" \
-   -d '{"customerId":"CUST-1001", "message":"Why is my bill so high, and how do I reset my EC2 password?"}'
+   cd swarm-dashboard
+   npm install
+   npm run dev
    ```
+
+Once all three are running, open your browser to **http://localhost:5173** (or the port Vite provides) to interact with the Swarm via the premium glassmorphic UI!

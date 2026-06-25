@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +17,21 @@ public class ManualIngestionService {
     private static final Logger logger = LoggerFactory.getLogger(ManualIngestionService.class);
     
     private final VectorStore vectorStore;
+    private final Environment env;
 
-    public ManualIngestionService(VectorStore vectorStore) {
+    public ManualIngestionService(VectorStore vectorStore, Environment env) {
         this.vectorStore = vectorStore;
+        this.env = env;
     }
 
     @PostConstruct
     public void ingestManuals() {
+        String openaiKey = env.getProperty("OPENAI_API_KEY");
+        if (openaiKey == null || openaiKey.trim().isEmpty() || openaiKey.contains("sk-mock-key") || openaiKey.contains("sk-...")) {
+            logger.warn("OPENAI_API_KEY is missing or invalid. Skipping Manuals Ingestion to prevent API 401 stack traces.");
+            return;
+        }
+
         logger.info("Initializing Enterprise GraphRAG Ingestion...");
 
         String manualText = """
@@ -48,7 +57,7 @@ public class ManualIngestionService {
             vectorStore.add(splitDocuments);
             logger.info("Ingestion complete!");
         } catch (Exception e) {
-            logger.warn("Ingestion failed (Check OPENAI_API_KEY): {}", e.getMessage());
+            logger.warn("Ingestion failed: {}", e.getMessage());
         }
     }
 }

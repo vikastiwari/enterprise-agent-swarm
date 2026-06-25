@@ -25,8 +25,8 @@ const ChatInterface = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId: 'CUST-1001', message: input })
       });
-      const text = await response.text();
-      addChatMessage({ id: Date.now() + 1, role: 'bot', content: text });
+      const data = await response.json();
+      addChatMessage({ id: Date.now() + 1, role: 'bot', content: data.response || "No response received" });
     } catch (e) {
       addChatMessage({ id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' });
     } finally {

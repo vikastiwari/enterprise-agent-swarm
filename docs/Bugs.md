@@ -172,3 +172,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** Navigating away from the "Chat" tab to "Observability" and back caused the chat window to reset completely. The Observability panel also contained messy placeholder text and oversized "Virtual Threads" telemetry cards.
 - **Root Cause:** The `ChatInterface.jsx` was using a local React `useState` to store chat messages, meaning the state was destroyed every time the component unmounted during a tab switch.
 - **Fix:** Lifted the chat state globally by adding `chatMessages` array and an `addChatMessage` action to the Zustand `store.jsx`. Updated `ChatInterface` to bind to the global state, ensuring persistence across component mounts. Refactored `ObservabilityPanel.jsx` to replace the crude text placeholder with a clean UI graphic, and reduced the padding and font sizes of the telemetry cards to fit MCP sessions better.
+
+## Bug 35: Raw JSON Rendering in Chat Interface
+- **Symptom:** The chat interface displayed the raw JSON object `{"response": "..."}` instead of the extracted string.
+- **Root Cause:** `ChatInterface.jsx` called `await response.text()` on the HTTP request, which simply converted the Spring Boot `Map<String, String>` JSON output into a raw string, rather than parsing it.
+- **Fix:** Updated the fetch logic in `ChatInterface.jsx` to use `await response.json()` and correctly map `data.response` into the UI chat state.

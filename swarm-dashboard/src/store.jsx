@@ -103,60 +103,6 @@ export const useStore = create((set, get) => ({
   })),
 
   connectWebSocket: () => {
-    if (ws) return;
-    
-    ws = new WebSocket('ws://localhost:8080');
-
-    ws.onopen = () => {
-      console.log('Connected to Orchestrator Mock Server');
-      set({ isConnected: true });
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const { type, payload } = data;
-      
-      set((state) => {
-        const { channelId } = payload;
-        if (!channelId) return state;
-        
-        const prevState = state.channelStates[channelId] || {};
-        
-        switch (type) {
-          case 'PIPELINE_START':
-            return {
-              channelStates: {
-                ...state.channelStates,
-                [channelId]: {
-                  ...prevState,
-                  isRunning: true,
-                  stages: payload.stages ? payload.stages.map(s => ({ ...s, status: 'pending', progress: 0 })) : prevState.stages,
-                  logs: [],
-                  vramUsage: 10
-                }
-              }
-            };
-          case 'PIPELINE_COMPLETE':
-            return {
-              channelStates: {
-                ...state.channelStates,
-                [channelId]: {
-                  ...prevState,
-                  isRunning: false,
-                  vramUsage: 10
-                }
-              }
-            };
-          case 'STAGE_UPDATE':
-            const newStages = [...prevState.stages];
-            newStages[payload.stageIndex] = {
-              ...newStages[payload.stageIndex],
-              progress: payload.progress,
-              status: payload.status
-            };
-            return {
-              channelStates: {
-                ...state.channelStates,
     // Disabled legacy Orchestrator Mock WebSocket
     console.log('Legacy Orchestrator WebSocket Disabled. Relying on local simulation for Observability metrics.');
     set({ isConnected: false });

@@ -50,6 +50,15 @@ graph TD;
 - **JPA & H2 In-Memory DB:** Secure sandbox for the Billing Agent.
 - **Java 21 Project Loom:** Non-blocking Virtual Threads to ensure the Supervisor can handle hundreds of concurrent agent conversations without OS thread starvation.
 
+## 📊 Test Coverage
+Our core Enterprise Swarm logic has roughly **80% total Instruction Coverage** (480 covered / 122 missed instructions)! Here are the highlights for our most complex mathematically-driven components:
+
+- **DebateResolver**: 100% Covered! 🟢
+- **CausalArmorInterceptor**: 95.7% Covered! 🟢
+- **SupervisorAgent**: 81.1% Covered! 🟢
+
+*The only things lightly covered are the basic Spring Boot Application runner and the ChatController (which just delegates).*
+
 ## 🚀 Quick Start
 1. Add your OpenAI API key to `swarm-orchestrator/src/main/resources/application.yml` (or export it as `OPENAI_API_KEY`).
 2. Build the entire multi-module project:

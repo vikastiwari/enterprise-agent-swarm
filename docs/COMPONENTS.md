@@ -15,7 +15,7 @@ This document outlines the specific classes and modules that make up the multi-a
   - Initializes a customized `ChatClient` with a strict `System Prompt` that commands it to route tasks.
   - Examines user input for routing keywords.
   - Dispatches parallel execution to the `SupportAgent` using `CompletableFuture.supplyAsync()`.
-  - Dispatches parallel execution to the Billing system via the MCP Client.
+  - Injects a dynamic `List<ToolCallback>` and dispatches execution to the Billing system via the Spring AI MCP Client over STDIO.
   - Aggregates the `String` outputs from both asynchronous tasks into a single, comprehensive response to the user.
 
 ### `SupportAgent.java`
@@ -31,7 +31,7 @@ This document outlines the specific classes and modules that make up the multi-a
 - **Role:** The secure bridge between the LLM and the relational database, acting as an MCP Tool.
 - **Responsibilities:** 
   - Exposes the `getCustomerBillingInfo` Java Function.
-  - Communicates exclusively over the Model Context Protocol, sandboxing the logic from the Orchestrator.
+  - Communicates exclusively over the Model Context Protocol (STDIO transport), sandboxing the logic from the Orchestrator.
   
 ### `BillingRepository.java` & `BillingRecord.java`
 - **Role:** Data Persistence.

@@ -31,5 +31,5 @@ This document details the internal and external communication protocols used wit
 
 ## 4. Agent to Database (Model Context Protocol)
 ### MCP Protocol -> JPA
-- **Protocol**: Standardized Model Context Protocol (MCP) using `spring-ai-mcp-server-webmvc`.
-- **Mechanism**: The `billing-mcp-server` runs completely isolated on its own port. It exposes a tool annotated with `@Tool` or `@Description`. The `swarm-orchestrator` sends the LLM's function call arguments via HTTP/SSE. The remote MCP server executes the local Java function (which runs a `JpaRepository` query against the isolated H2 database) and feeds the result back over the network to the orchestrator.
+- **Protocol**: Standardized Model Context Protocol (MCP) using STDIO transport (`spring-ai-mcp-client-webflux-spring-boot-starter`).
+- **Mechanism**: The `billing-mcp-server` runs completely isolated, spawned as a sub-process via `java -jar`. It exposes a tool annotated with `@Tool`. The `swarm-orchestrator` interacts with it by writing to and reading from standard input/output streams. The remote MCP server executes the local Java function (which runs a `JpaRepository` query against the isolated H2 database) and feeds the result back over the IO stream to the orchestrator.

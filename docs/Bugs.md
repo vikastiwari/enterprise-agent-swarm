@@ -103,3 +103,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Root Cause:** The `SupervisorAgent` was using a `logEvent` helper method that exclusively saved audit logs to the H2 Database `dpm_event_log` table via Spring Data JPA without mirroring those events to standard output/console (`log.info()`). This left the terminal completely silent during the agent processing stages (HTN Parsing, Dispatching, Task Completion, and Synthesis).
 - **Fix:** Added `log.info("[Supervisor Event] {} | {}", action, payload);` to the `SupervisorAgent.logEvent()` method so developers can visually monitor the Swarm's asynchronous task dispatches and inner workflow steps directly in the Spring Boot console.
 
+## 22. AI Generating Unsupported Agent Names in DAG
+- **Issue:** The Orchestrator successfully generated a DAG but returned an empty API response. The logs showed `DISPATCH_TASK | Agent: financial_system`.
+- **Root Cause:** When migrating from the mock fallback to the real `gemini-2.5-flash` model, the AI successfully parsed the intent into a structured DAG but assigned a logical (yet unsupported) agent name (`financial_system` instead of `BillingAgent`). Because `SupervisorAgent` hardcoded `task.agent().equals("BillingAgent")`, the task was completely skipped.
+- **Fix:** Updated the `HTNDagParser` system prompt to strictly enforce agent names: `"IMPORTANT: You MUST ONLY use the following exact agent names: 'BillingAgent' ... and 'SupportAgent' ..."`.
+

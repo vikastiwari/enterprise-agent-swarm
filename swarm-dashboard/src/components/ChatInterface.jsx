@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { Send, User, Bot } from 'lucide-react';
 import { useSonicFeedback } from '../hooks/useSonicFeedback';
 import { motion } from 'framer-motion';
+import { useStore } from '../store';
 
 const ChatInterface = () => {
-  const [messages, setMessages] = useState([
-    { id: 1, role: 'system', content: 'Connected to Enterprise Swarm. How can I assist you today?' }
-  ]);
+  const { chatMessages, addChatMessage } = useStore();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { playMenuClick } = useSonicFeedback();
@@ -16,7 +15,7 @@ const ChatInterface = () => {
     playMenuClick();
     
     const userMsg = { id: Date.now(), role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
+    addChatMessage(userMsg);
     setInput('');
     setIsLoading(true);
 
@@ -27,9 +26,9 @@ const ChatInterface = () => {
         body: JSON.stringify({ customerId: 'CUST-1001', message: input })
       });
       const text = await response.text();
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'bot', content: text }]);
+      addChatMessage({ id: Date.now() + 1, role: 'bot', content: text });
     } catch (e) {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' }]);
+      addChatMessage({ id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' });
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +37,7 @@ const ChatInterface = () => {
   return (
     <div className="glass-panel" style={{ minHeight: '300px', maxHeight: '600px', display: 'flex', flexDirection: 'column', padding: '1rem' }}>
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1.5rem' }}>
-        {messages.map((msg) => (
+        {chatMessages.map((msg) => (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

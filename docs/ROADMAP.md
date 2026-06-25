@@ -24,22 +24,17 @@
   - Replaced legacy `ToolCallbackProvider` with native `spring-ai-mcp-client` auto-configuration.
   - Successfully connected `SupervisorAgent` to `billing-mcp-server` via STDIO, exposing `getCustomerBillingInfo` as an MCP tool.
 
-## Upcoming Phases
-- [ ] **### Phase 2: Next-Generation RAG & Knowledge Synthesis ✅
-- **Status:** Completed
-- **Details:** Pivoted to `SimpleVectorStore` for rapid prototyping (due to Docker WSL restrictions). Implemented `ManualIngestionService` and integrated `QuestionAnswerAdvisor` into `SupportAgent`.
+- [x] **Phase 2: Next-Generation RAG & Knowledge Synthesis**
+  - Pivoted to `SimpleVectorStore` for rapid prototyping. Implemented `ManualIngestionService` and integrated `QuestionAnswerAdvisor` into `SupportAgent`.
 
-### Phase 3: Deterministic Orchestration 🗓️
-- **Status:** Completed
-- **Details:** Implemented Hierarchical Task Networks (HTN) DAG parsing in `SupervisorAgent` and established an immutable Deterministic Projection Memory (DPM) Event Log using H2 in PostgreSQL compatibility mode.
+- [x] **Phase 3: Deterministic Orchestration**
+  - Implemented Hierarchical Task Networks (HTN) DAG parsing in `SupervisorAgent` and established an immutable Deterministic Projection Memory (DPM) Event Log using H2.
 
-### Phase 4: Autonomous Security 🛡️
-- **Status:** Completed
-- **Details:** Implemented `CausalArmorInterceptor` for Indirect Prompt Injection (IPI) defense and `DebateResolver` using a Beta-Binomial Mixture Model for mathematical debate resolution.
+- [x] **Phase 4: Autonomous Security**
+  - Implemented `CausalArmorInterceptor` for Indirect Prompt Injection (IPI) defense and `DebateResolver` using a Beta-Binomial Mixture Model.
 
-### Phase 7: Frontend Dashboard 🖥️
-- **Status:** Completed
-- **Details:** Developed a premium React/Vite "Enterprise Swarm Dashboard" inheriting 4 glassmorphic themes (Dark, Light, AMOLED, Cyberpunk), live HTN Observability Panel, and Chat Interface.
+- [x] **Phase 7: Frontend Dashboard**
+  - Developed a premium React/Vite "Enterprise Swarm Dashboard" featuring Zustand state isolation, 4 glassmorphic themes, live HTN Observability Panel, and distinct agent channels.
 
 ## Upcoming Phases
 - [ ] **Phase 8: Production Deployment**

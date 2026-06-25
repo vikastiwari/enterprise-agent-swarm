@@ -3,9 +3,10 @@
 This document details the internal and external communication protocols used within the multi-agent microservice architecture.
 
 ## 1. External Communication (Client-Server)
-### REST API
+### REST API & CORS
 - **Endpoint**: `POST /api/chat`
 - **Protocol**: HTTP/1.1
+- **CORS Strategy**: The `@CrossOrigin(origins = "*")` annotation allows the React UI running on port `5173` to securely communicate with the Orchestrator on `8080`.
 - **Payload Structure**:
   ```json
   {
@@ -13,7 +14,7 @@ This document details the internal and external communication protocols used wit
     "message": "Why is my bill so high?"
   }
   ```
-- **Behavior**: The client sends a synchronous HTTP request. The `ChatController` receives the request and delegates the processing to the `SupervisorAgent`. The response is returned as a plain string (or JSON in future iterations).
+- **Behavior**: The React UI (`ChatInterface.jsx`) uses `fetch` and `await response.json()` to parse the unified JSON object returned by the `ChatController`. The UI strictly isolates and routes this payload back into the user's specific `channelId` chat view.
 
 ## 2. Internal Inter-Agent Communication (IPC)
 ### Java Virtual Threads & CompletableFuture

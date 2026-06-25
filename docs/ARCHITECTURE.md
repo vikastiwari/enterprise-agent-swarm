@@ -36,10 +36,18 @@ graph TD;
 **Problem:** LLMs cannot be trusted to perform math or securely query billing ledgers. Additionally, putting database credentials in the same application as conversational AI logic increases the attack surface.
 **Solution:** We extracted the billing ledger logic into a completely separate microservice (`billing-mcp-server`). It communicates with the AI Orchestrator via the **Model Context Protocol (MCP)**. The LLM extracts parameters, the Orchestrator sends an MCP function execution request to the Billing Server, and the Billing Server securely queries its H2 DB and returns the deterministic result.
 
-### 3.3. Isolation of Concerns
-- **React Frontend Dashboard:** A separate Node.js/Vite environment responsible only for telemetry visualization (HTN DAG) and user I/O.
+### 3.3. Deterministic Routing & Mathematical Safety
+**Problem:** Relying purely on LLM text output for routing or math leads to unpredictable formatting and calculation errors.
+**Solution:** We built an `HTNDagParser` to deterministically parse LLM intents into a strict Directed Acyclic Graph (DAG) for routing. For mathematical safety, the `DebateResolver` uses a Beta-Binomial Mixture Model to evaluate multiple competing agent answers and deterministically select the mathematically sound one.
+
+### 3.4. Autonomous Security
+**Problem:** Multi-agent systems are vulnerable to Indirect Prompt Injections (IPI).
+**Solution:** The `CausalArmorInterceptor` analyzes incoming prompts and intercepts malicious inputs before they reach the orchestration layer, preventing prompt bleeding and system compromise.
+
+### 3.5. Isolation of Concerns
+- **React Frontend Dashboard:** A separate Node.js/Vite environment responsible only for telemetry visualization (HTN DAG), global state management via Zustand, and user I/O across isolated agent channels.
 - **Billing MCP Server:** A strict, sandboxed Spring Boot module without any conversational logic, solely bonded to the `BillingTools`.
-- **Support Agent:** Cannot access financial data; strictly bonded to the technical documentation via RAG.
+- **Support Agent:** Cannot access financial data; strictly bonded to the technical documentation via `SimpleVectorStore` RAG.
 - **Supervisor Agent:** Only responsible for understanding intent and parallel dispatching.
 
 ## 4. Scalability & Deployment

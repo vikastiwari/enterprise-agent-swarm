@@ -14,7 +14,7 @@ while True:
     req_url = url + (f"&pageToken={next_token}" if next_token else "")
     response = requests.get(req_url).json()
     for m in response.get("models", []):
-        if "gemini-1.5" in m["name"]:
+        if "lite" in m["name"].lower():
             found.append(m["name"])
     next_token = response.get("nextPageToken")
     if not next_token:

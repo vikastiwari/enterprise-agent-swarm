@@ -4,7 +4,6 @@ import {
   Settings, Play, RefreshCw, Layers 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
 import TopNav from './components/TopNav';
 import Particles from './components/Particles';
@@ -19,6 +18,7 @@ import BootScreen from './components/BootScreen';
 import ToastContainer from './components/ToastContainer';
 import ChatInterface from './components/ChatInterface';
 import ObservabilityPanel from './components/ObservabilityPanel';
+import SettingsPanel from './components/SettingsPanel';
 import { useAmbientMusic } from './hooks/useAmbientMusic';
 import { useSonicFeedback } from './hooks/useSonicFeedback';
 import { CHANNELS, useStore } from './store';
@@ -172,10 +172,7 @@ function App() {
               ) : activeTab === 'observability' ? (
                 <ObservabilityPanel />
               ) : (
-                <Dashboard 
-                  activeTab={activeTab}
-                  channelState={activeState}
-                />
+                <SettingsPanel />
               )}
             </motion.div>
           </AnimatePresence>

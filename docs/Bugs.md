@@ -142,3 +142,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** Sub-agents returning JSON strings wrapped in Markdown text (e.g., ```json { "tool_code": "..." } ```) instead of properly executing the MCP Tool Calls natively.
 - **Root Cause:** In an attempt to bypass the 5 RPM limit, we switched to `gemini-3.1-flash-lite` (15 RPM) and `gemini-2.5-flash-lite` (10 RPM). While they successfully avoided the rate limits, these "Lite" models completely failed at strict native Tool Calling required by the `spring-ai-mcp` protocol, lacking the precise alignment of the premium models.
 - **Fix:** Reverted to `gemini-flash-latest` to ensure flawless Tool Calling execution, accepting the 5 RPM limit in exchange for architectural purity, relying on fallbacks for high-load protection.
+
+## Bug 29: Old Dashboard UI Artifacts Leaking
+- **Symptom:** "Active Orchestration Pipeline" and "Cluster Telemetry" labels were visible in the new Enterprise Swarm Dashboard, along with the old `ai-studio-dashboard` icon.
+- **Root Cause:** When migrating the `ai-studio-dashboard` UI code, the `Dashboard.jsx` component was inadvertently left in the routing logic for the 'Settings' tab in `App.jsx`, causing old mock telemetry components to render. The `logo.png` in the `public/` directory was also not updated.
+- **Fix:** Created a new custom `SettingsPanel.jsx` containing actual theme and audio preferences to replace the legacy `Dashboard.jsx` component. Completely deleted `Dashboard.jsx` and generated a new, minimalist blue "Enterprise Swarm" logo for the `public` directory.

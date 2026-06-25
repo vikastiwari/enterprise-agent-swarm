@@ -127,3 +127,18 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** `429 Quota Exceeded` exceptions from Gemini API when testing the system with `gemini-2.5-flash` or `gemini-2.0-flash`. The free tier limits for `gemini-2.5-flash` are extremely low (e.g. 20 requests per day) and `gemini-2.0-flash` returned `limit: 0` in some configurations.
 - **Root Cause:** Reaching the free-tier quota limits for Gemini API requests while testing `curl` loops.
 - **Fix:** The system now gracefully degrades to `Supervisor Synthesis Fallback` responses, ensuring the 3 core `curl` tests pass smoothly without crashing the server or throwing a 500 error even when rate limits are exhausted. Changed `application.yml` chat model to `gemini-1.5-pro` as the baseline.
+
+## Bug 26: Gemini 1.5 Deprecation (404 Not Found)
+- **Symptom:** `404 Not Found` exceptions when explicitly configuring the application to use `gemini-1.5-flash` or `gemini-1.5-pro`.
+- **Root Cause:** The Gemini 1.5 models were entirely removed/deprecated from the Google AI Studio `v1beta` API in 2026. A manual Python iteration through the `models.list` API endpoint confirmed their absence.
+- **Fix:** Pivoted the Spring `application.yml` configuration to use the modern aliases like `gemini-flash-latest` (which maps to `gemini-3.5-flash`).
+
+## Bug 27: Gemini 3.5 Flash Rate Limits (5 RPM Quota)
+- **Symptom:** Immediate `429 Too Many Requests` when executing multiple `curl` commands back-to-back. The error metric specifically mentioned: `generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.5-flash`.
+- **Root Cause:** `gemini-flash-latest` has a strict Free Tier quota of **5 Requests Per Minute (RPM)**. Since our Swarm Orchestrator inherently sends parallel requests (HTN Parser, Supervisor Synthesis, and Sub-Agents), a single user intent triggers exactly 3 API calls. Sending back-to-back curls instantly hits the 5 RPM ceiling.
+- **Fix:** Relied entirely on the robust **Supervisor Synthesis Fallback Mechanism** and Spring Retry backoff logic. The server catches the quota exhaustions and gracefully returns raw text extraction from the sub-agents instead of crashing.
+
+## Bug 28: Lite Models Failing at Native Tool Calling
+- **Symptom:** Sub-agents returning JSON strings wrapped in Markdown text (e.g., ```json { "tool_code": "..." } ```) instead of properly executing the MCP Tool Calls natively.
+- **Root Cause:** In an attempt to bypass the 5 RPM limit, we switched to `gemini-3.1-flash-lite` (15 RPM) and `gemini-2.5-flash-lite` (10 RPM). While they successfully avoided the rate limits, these "Lite" models completely failed at strict native Tool Calling required by the `spring-ai-mcp` protocol, lacking the precise alignment of the premium models.
+- **Fix:** Reverted to `gemini-flash-latest` to ensure flawless Tool Calling execution, accepting the 5 RPM limit in exchange for architectural purity, relying on fallbacks for high-load protection.

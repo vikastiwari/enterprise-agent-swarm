@@ -157,3 +157,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** Browser console was continuously spammed with `WebSocket connection to 'ws://localhost:8080/' failed` and `ws://localhost:8000/ws` errors, followed by reconnect attempts every 3 seconds.
 - **Root Cause:** The `store.jsx` file ported from the old dashboard contained legacy code that attempted to connect to mock Orchestrator and HFT Telemetry WebSocket servers that do not exist in the new Spring Boot architecture (which uses REST).
 - **Fix:** Surgically removed the `ws` connection logic and auto-reconnect loops from `connectWebSocket` and `connectHftWebSocket` in `store.jsx`. Forced the UI state manager to instantly default to "local simulation mode" to keep the frontend telemetry animated without polluting the console with network errors.
+
+## Bug 32: CORS Policy Blocking UI Chat Requests
+- **Symptom:** UI threw a `net::ERR_FAILED` exception and logged `Access to fetch at 'http://localhost:8080/api/chat' from origin 'http://localhost:5173' has been blocked by CORS policy`.
+- **Root Cause:** The `swarm-orchestrator` Spring Boot application lacked a Cross-Origin Resource Sharing (CORS) configuration, preventing the Vite React dashboard (running on port 5173) from executing POST requests to the Orchestrator's API.
+- **Fix:** Appended the `@CrossOrigin(origins = "*")` annotation to the `ChatController.java` to explicitly permit HTTP requests from the React dashboard origin.

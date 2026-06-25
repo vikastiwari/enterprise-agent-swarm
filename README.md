@@ -10,6 +10,14 @@ A production-grade **Chief AI Officer** microservice designed to handle complex,
 
 This system bridges legacy JVM enterprise architectures with modern Generative AI by utilizing **Java 21 Virtual Threads** for massive concurrency and **Spring AI** for robust Agent/LLM abstractions.
 
+## 📚 Documentation
+For a deep dive into the architecture and components, please review the following:
+- [Architecture Design](ARCHITECTURE.md)
+- [Component Specifications](COMPONENTS.md)
+- [Communication & IPC Strategy](COMMUNICATION.md)
+- [UI/UX Dashboard Blueprint](UI_UX_DESIGN.md)
+- [Project Roadmap](ROADMAP.md)
+
 ## 🧠 Architecture: The "Enterprise Swarm"
 When a user submits a query, the system does not rely on a single, hallucination-prone monolithic LLM. Instead, it utilizes an Orchestrator pattern:
 

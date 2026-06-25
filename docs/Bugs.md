@@ -47,3 +47,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Issue:** Attempting to run `./mvnw spring-boot:run` inside the `swarm-orchestrator` subdirectory throws `-bash: ./mvnw: No such file or directory`.
 - **Root Cause:** The Maven Wrapper (`mvnw` and `mvnw.cmd`) is generated at the root of the multi-module project (`enterprise-agent-swarm`), not inside the child module folders.
 - **Fix:** When running commands from inside a submodule directory, the correct path is `../mvnw` (e.g., `../mvnw spring-boot:run`). Alternatively, run commands from the project root using the `-pl` (project list) flag: `./mvnw -pl swarm-orchestrator spring-boot:run`.
+
+## 11. Missing OPENAI_API_KEY causes HttpRetryException during Application Startup
+- **Issue:** The console throws a massive stack trace (`java.net.HttpRetryException: cannot retry due to server authentication`) during the `ManualIngestionService` initialization when `spring-boot:run` is executed.
+- **Root Cause:** Spring AI's `OpenAiEmbeddingModel` attempts to convert the Support Manuals into vector embeddings immediately when the application starts. If the `OPENAI_API_KEY` environment variable is not set (or is invalid), the OpenAI API rejects the request with an authentication error, crashing the ingestion process.
+- **Fix:** Export the API key in your terminal before running the application: `export OPENAI_API_KEY=sk-...` OR add it directly into `application.yml` under `spring.ai.openai.api-key`.

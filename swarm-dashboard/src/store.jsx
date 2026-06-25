@@ -48,11 +48,15 @@ export const useStore = create((set, get) => ({
     support: [{ id: 1, role: 'system', content: 'Connected to Support RAG Agent. How can I help you resolve technical issues?' }],
     sales: [{ id: 1, role: 'system', content: 'Connected to Sales Agent. I can help you with quotes and pricing.' }]
   },
+  chatLoadingStates: {},
   addChatMessage: (channelId, msg) => set((state) => ({ 
     chatMessages: { 
       ...state.chatMessages, 
       [channelId]: [...(state.chatMessages[channelId] || []), msg] 
     } 
+  })),
+  setChatLoading: (channelId, isLoading) => set((state) => ({
+    chatLoadingStates: { ...state.chatLoadingStates, [channelId]: isLoading }
   })),
 
   addToast: (message, type = 'info') => {

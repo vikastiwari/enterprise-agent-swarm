@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { useStore } from '../store';
 
 const ChatInterface = ({ activeChannel }) => {
-  const { chatMessages, addChatMessage } = useStore();
+  const { chatMessages, addChatMessage, chatLoadingStates, setChatLoading } = useStore();
   const currentMessages = chatMessages[activeChannel] || [];
+  const isLoading = chatLoadingStates[activeChannel] || false;
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const { playMenuClick } = useSonicFeedback();
 
   const handleSend = async () => {
@@ -18,7 +18,7 @@ const ChatInterface = ({ activeChannel }) => {
     const userMsg = { id: Date.now(), role: 'user', content: input };
     addChatMessage(activeChannel, userMsg);
     setInput('');
-    setIsLoading(true);
+    setChatLoading(activeChannel, true);
 
     try {
       const response = await fetch('http://localhost:8080/api/chat', {
@@ -31,7 +31,7 @@ const ChatInterface = ({ activeChannel }) => {
     } catch (e) {
       addChatMessage(activeChannel, { id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' });
     } finally {
-      setIsLoading(false);
+      setChatLoading(activeChannel, false);
     }
   };
 

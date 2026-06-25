@@ -10,11 +10,16 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Issue:** `mvn test` failed with `cannot find symbol class MockBean`. Spring Boot 3.4.x completely removed `@MockBean` from the `org.springframework.boot.test.mock.mockito` package.
 - **Fix:** Refactored `SupervisorAgentTest.java` to use the new standard `@MockitoBean` from `org.springframework.test.context.bean.override.mockito.MockitoBean`.
 
-## 3. RestClientAutoConfiguration ClassNotFoundException
+## 3. WSL Docker Integration Offline (Phase 2)
+- **Description:** During Neo4j integration via `docker-compose`, the daemon returned `The command 'docker' could not be found in this WSL 2 distro`.
+- **Root Cause:** Docker Desktop WSL 2 integration is either not enabled for the default Ubuntu distro, or Docker Desktop is not running.
+- **Resolution:** Pivoted to Spring AI's zero-dependency `SimpleVectorStore` to maintain True RAG capabilities without blocking development. Neo4j integration is staged for when Docker is enabled.
+
+## 4. RestClientAutoConfiguration ClassNotFoundException
 - **Issue:** The application context failed to load because it was trying to initialize `RestClientAutoConfiguration`, but it was missing from the classpath. This was caused by an experimental/unreleased Spring Boot parent version (`4.1.0`) injected by `start.spring.io` default curl.
 - **Fix:** Explicitly downgraded `<version>4.1.0</version>` to `<version>3.4.0</version>` inside `pom.xml`, and added `spring-boot-starter-web` and `spring-boot-starter-test` for comprehensive REST testing.
 
-## 4. Spring Cloud Function Context Configuration Error
+## 5. Spring Cloud Function Context Configuration Error
 - **Issue:** `Component scan for configuration class ContextFunctionCatalogAutoConfiguration could not be used with conditions in REGISTER_BEAN phase`. This occurred because Spring Boot 3.4.0's condition evaluation engine has breaking changes incompatible with `spring-cloud-function-context` (which is pulled in by `spring-ai-openai-spring-boot-starter` for tool calling).
 - **Fix:** Downgraded the Spring Boot parent version from `3.4.0` to `3.3.5`, a stable release that is fully compatible with Spring AI 1.0.0-M1.
 

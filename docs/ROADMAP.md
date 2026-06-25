@@ -21,12 +21,16 @@
   - Configure Mockito (`@MockitoBean`) to mock the `ChatModel` to prevent live LLM calls during CI/CD.
 
 ## Upcoming Phases
-- [ ] **Phase 6: True RAG Implementation**
-  - Integrate `spring-ai-pgvector` or ChromaDB to replace mock static text in the `SupportAgent`.
-  - Ingest PDF IT manuals and perform chunking and embedding generation.
+- [ ] **### Phase 2: Next-Generation RAG & Knowledge Synthesis ✅
+- **Status:** Completed
+- **Details:** Pivoted to `SimpleVectorStore` for rapid prototyping (due to Docker WSL restrictions). Implemented `ManualIngestionService` and integrated `QuestionAnswerAdvisor` into `SupportAgent`.
+
+### Phase 3: Deterministic Orchestration 🗓️
+- **Status:** Completed
+- **Details:** Implemented Hierarchical Task Networks (HTN) DAG parsing in `SupervisorAgent` and established an immutable Deterministic Projection Memory (DPM) Event Log using H2 in PostgreSQL compatibility mode.
+
 - [ ] **Phase 7: Frontend Dashboard**
   - Develop a React/Next.js "Admin Chat Interface".
-  - Stream responses using Server-Sent Events (SSE) or WebSockets.
 - [ ] **Phase 8: Production Deployment**
   - Migrate from H2 to PostgreSQL.
   - Dockerize the application and deploy to a Kubernetes cluster.

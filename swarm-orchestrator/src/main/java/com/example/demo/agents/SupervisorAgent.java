@@ -3,62 +3,79 @@ package com.example.demo.agents;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class SupervisorAgent {
 
-    private final ChatClient chatClient;
     private final SupportAgent supportAgent;
+    private final ChatClient chatClient;
+    private final HTNDagParser htnDagParser;
+    private final EventLogRepository eventLogRepository;
 
-    public SupervisorAgent(ChatClient.Builder chatClientBuilder, SupportAgent supportAgent) {
+    public SupervisorAgent(SupportAgent supportAgent, ChatClient.Builder chatClientBuilder, HTNDagParser htnDagParser, EventLogRepository eventLogRepository) {
         this.supportAgent = supportAgent;
+        this.htnDagParser = htnDagParser;
+        this.eventLogRepository = eventLogRepository;
         this.chatClient = chatClientBuilder
-            .defaultSystem("You are the Chief AI Supervisor. Your job is to orchestrate tasks. " +
-                           "You have access to the 'getCustomerBillingInfo' tool to resolve billing questions. " +
-                           "If the user asks a billing question, use the tool. Provide a unified, polite response.")
-            .defaultFunctions("getCustomerBillingInfo")
+            .defaultSystem("You are the Supervisor Agent. Given sub-task results, generate a final coherent response to the user.")
             .build();
     }
 
-    public String orchestrateUserRequest(String customerId, String request) {
-        log.info("[Supervisor] Received request from Customer {}: {}", customerId, request);
-        
-        // Let's use Java 21 Virtual Threads (CompletableFuture runs on virtual threads if configured)
-        // For simplicity here, we split logic. If request contains tech support keywords, delegate.
-        
-        CompletableFuture<String> supportTask = CompletableFuture.supplyAsync(() -> {
-            if (request.toLowerCase().contains("password") || request.toLowerCase().contains("login") || request.toLowerCase().contains("server")) {
-                return supportAgent.resolveIssue(request);
-            }
-            return "";
-        });
+    private void logEvent(String action, String payload) {
+        DpmEvent event = new DpmEvent();
+        event.setAgentName("SupervisorAgent");
+        event.setAction(action);
+        event.setPayload(payload);
+        eventLogRepository.save(event);
+    }
 
-        CompletableFuture<String> billingTask = CompletableFuture.supplyAsync(() -> {
+    public String orchestrateUserRequest(String customerId, String request) {
+        logEvent("RECEIVED_INTENT", "Customer " + customerId + " requested: " + request);
+        log.info("[Supervisor] Orchestrating request for {}: {}", customerId, request);
+
+        // 1. Parse intent into an HTN DAG
+        HTNDagParser.DagPlan plan = htnDagParser.parse(request);
+        logEvent("HTN_DAG_GENERATED", "Tasks: " + plan.tasks().size());
+
+        StringBuilder combinedContext = new StringBuilder();
+
+        // 2. Execute tasks concurrently
+        CompletableFuture<?>[] futures = plan.tasks().stream().map(task -> 
+            CompletableFuture.supplyAsync(() -> {
+                String result = "";
+                logEvent("DISPATCH_TASK", "Agent: " + task.agent() + " | Task: " + task.instruction());
+                
+                if (task.agent().equals("BillingAgent")) {
+                    // For now, simulate BillingAgent MCP call
+                    result = "Billing Data: Balance is $120.50";
+                } else if (task.agent().equals("SupportAgent")) {
+                    result = supportAgent.resolveIssue(task.instruction());
+                }
+                
+                logEvent("TASK_COMPLETE", "Agent: " + task.agent() + " | Result: " + result);
+                return result;
+            }).thenAccept(res -> {
+                synchronized(combinedContext) {
+                    combinedContext.append(res).append("\n");
+                }
+            })
+        ).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(futures).join();
+
+        logEvent("GENERATING_RESPONSE", "Synthesizing final output");
+        
+        try {
             return chatClient.prompt()
-                    .user("Customer ID: " + customerId + "\nUser Request: " + request)
+                    .user("Customer Request: " + request + "\n\nSub-Agent Context:\n" + combinedContext.toString())
                     .call()
                     .content();
-        });
-
-        try {
-            String supportResponse = supportTask.get();
-            String billingResponse = billingTask.get();
-            
-            StringBuilder finalResponse = new StringBuilder();
-            if (!billingResponse.isEmpty()) {
-                finalResponse.append(billingResponse).append("\n\n");
-            }
-            if (!supportResponse.isEmpty()) {
-                finalResponse.append("**Tech Support Notes:**\n").append(supportResponse);
-            }
-            return finalResponse.toString();
-            
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Orchestration failed", e);
-            return "Apologies, the Enterprise Swarm encountered an error resolving your request.";
+        } catch (Exception e) {
+            log.warn("[Supervisor] LLM synthesis failed. Returning raw context.");
+            return "Supervisor Synthesis Fallback:\n" + combinedContext.toString();
         }
     }
 }

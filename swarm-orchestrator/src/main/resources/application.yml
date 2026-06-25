@@ -12,5 +12,17 @@ spring:
       options:
         model: gpt-3.5-turbo
 
+  datasource:
+    url: jdbc:h2:mem:swarmdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+
 server:
   port: 8080

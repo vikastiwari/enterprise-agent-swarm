@@ -157,84 +157,28 @@ export const useStore = create((set, get) => ({
             return {
               channelStates: {
                 ...state.channelStates,
-                [channelId]: {
-                  ...prevState,
-                  stages: newStages
-                }
-              }
-            };
-          case 'TELEMETRY_UPDATE':
-            return {
-              channelStates: {
-                ...state.channelStates,
-                [channelId]: {
-                  ...prevState,
-                  vramUsage: payload.vramUsage
-                }
-              }
-            };
-          case 'LOG_MESSAGE':
-            return {
-              channelStates: {
-                ...state.channelStates,
-                [channelId]: {
-                  ...prevState,
-                  logs: [...prevState.logs, payload.log]
-                }
-              }
-            };
-          default:
-            return state;
-        }
-      });
-    };
-
-    ws.onclose = () => {
-      console.log('Disconnected from Orchestrator Mock Server');
-      set({ isConnected: false });
-      ws = null;
-      // Auto-reconnect
-      setTimeout(() => get().connectWebSocket(), 3000);
-    };
+    // Disabled legacy Orchestrator Mock WebSocket
+    console.log('Legacy Orchestrator WebSocket Disabled. Relying on local simulation for Observability metrics.');
+    set({ isConnected: false });
   },
 
   connectHftWebSocket: () => {
-    if (hftWs) return;
+    // Disabled legacy HFT WebSocket
+    console.log('Legacy HFT WebSocket Disabled. Falling back to local simulation for telemetry.');
+    set({ isHftConnected: false });
     
-    hftWs = new WebSocket('ws://localhost:8000/ws');
-
-    hftWs.onopen = () => {
-      console.log('Connected to HFT Telemetry Server');
-      set({ isHftConnected: true });
-    };
-
-    hftWs.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        set({ hftTelemetry: { price: data.price, action: data.action } });
-      } catch(e) {}
-    };
-
-    hftWs.onclose = () => {
-      console.log('Disconnected from HFT Telemetry Server. Falling back to local simulation.');
-      set({ isHftConnected: false });
-      hftWs = null;
-      
-      // Start local simulation if not running
-      if (!get().hftInterval) {
-        const interval = setInterval(() => {
-          set((state) => ({
-            hftTelemetry: {
-              price: Math.max(100, state.hftTelemetry.price + (Math.random() - 0.5) * 5),
-              action: Math.floor(Math.random() * 3) // 0=hold, 1=buy, 2=sell
-            }
-          }));
-        }, 200);
-        set({ hftInterval: interval });
-      }
-      
-      setTimeout(() => get().connectHftWebSocket(), 10000);
-    };
+    // Start local simulation immediately
+    if (!get().hftInterval) {
+      const interval = setInterval(() => {
+        set((state) => ({
+          hftTelemetry: {
+            price: Math.max(100, state.hftTelemetry.price + (Math.random() - 0.5) * 5),
+            action: Math.floor(Math.random() * 3) // 0=hold, 1=buy, 2=sell
+          }
+        }));
+      }, 200);
+      set({ hftInterval: interval });
+    }
   },
 
   handleRender: (channelId) => {

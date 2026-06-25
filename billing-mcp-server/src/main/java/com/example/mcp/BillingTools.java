@@ -2,6 +2,9 @@ package com.example.mcp;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,5 +21,10 @@ public class BillingTools {
         return billingRepository.findById(request.customerId())
                 .map(record -> new BillingResponse(record.getLastInvoiceAmount(), record.getBillingStatus(), record.getNotes()))
                 .orElse(new BillingResponse(0.0, "UNKNOWN", "Customer not found in database."));
+    }
+
+    @Bean
+    public ToolCallbackProvider billingToolCallbackProvider() {
+        return MethodToolCallbackProvider.builder().toolObjects(this).build();
     }
 }

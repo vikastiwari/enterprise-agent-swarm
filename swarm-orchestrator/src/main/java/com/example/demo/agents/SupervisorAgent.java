@@ -36,6 +36,7 @@ public class SupervisorAgent {
     }
 
     private void logEvent(String action, String payload) {
+        log.info("[Supervisor Event] {} | {}", action, payload);
         DpmEvent event = new DpmEvent();
         event.setAgentName("SupervisorAgent");
         event.setAction(action);

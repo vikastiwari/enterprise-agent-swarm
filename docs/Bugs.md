@@ -98,3 +98,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Root Cause:** Setting the model to `gemini-flash-latest` caused Google's API to dynamically map to the experimental `gemini-3.5-flash` preview model. That model experienced a `503 High Demand` spike globally. Spring AI's automatic `RetryTemplate` intercepted the 503 and rapidly retried the request multiple times in milliseconds, instantly burning through the Free Tier limit of 5 requests per minute for that experimental model.
 - **Fix:** Hardcoded the model to the stable `gemini-2.5-flash` in `application.yml` to ensure high rate limit thresholds (15 RPM) and to avoid 503 errors typical of preview/experimental models.
 
+## 21. Orchestrator Silence During Execution
+- **Issue:** User reported the server appeared to be "waiting" or hanging after making a successful API request, showing only `Hibernate: insert` statements instead of progress.
+- **Root Cause:** The `SupervisorAgent` was using a `logEvent` helper method that exclusively saved audit logs to the H2 Database `dpm_event_log` table via Spring Data JPA without mirroring those events to standard output/console (`log.info()`). This left the terminal completely silent during the agent processing stages (HTN Parsing, Dispatching, Task Completion, and Synthesis).
+- **Fix:** Added `log.info("[Supervisor Event] {} | {}", action, payload);` to the `SupervisorAgent.logEvent()` method so developers can visually monitor the Swarm's asynchronous task dispatches and inner workflow steps directly in the Spring Boot console.
+

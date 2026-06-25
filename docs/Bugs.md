@@ -152,3 +152,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** Chat interface had excessive whitespace when empty due to a fixed 600px height with `marginTop: auto` pushing the input bar to the bottom. Settings panel sections were too dark in light mode. The "Deploy New Node" button in the sidebar was irrelevant.
 - **Root Cause:** Legacy CSS patterns from the original dashboard were ported over without adjustments for the new Swarm layout. 
 - **Fix:** Changed `ChatInterface.jsx` from a fixed 600px height to `minHeight: 300px, maxHeight: 600px` and removed the auto top margin on the input bar so it directly follows the messages. Replaced the hardcoded `rgba(0,0,0,0.2)` background in `SettingsPanel.jsx` with a subtle border for better contrast across all themes. Removed the obsolete Deploy button from `Sidebar.jsx`.
+
+## Bug 31: Legacy Mock WebSocket Console Spam
+- **Symptom:** Browser console was continuously spammed with `WebSocket connection to 'ws://localhost:8080/' failed` and `ws://localhost:8000/ws` errors, followed by reconnect attempts every 3 seconds.
+- **Root Cause:** The `store.jsx` file ported from the old dashboard contained legacy code that attempted to connect to mock Orchestrator and HFT Telemetry WebSocket servers that do not exist in the new Spring Boot architecture (which uses REST).
+- **Fix:** Surgically removed the `ws` connection logic and auto-reconnect loops from `connectWebSocket` and `connectHftWebSocket` in `store.jsx`. Forced the UI state manager to instantly default to "local simulation mode" to keep the frontend telemetry animated without polluting the console with network errors.

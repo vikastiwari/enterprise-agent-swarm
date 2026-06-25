@@ -22,7 +22,7 @@ spring:
         api-key: ${GEMINI_API_KEY:sk-mock-key}
         chat:
           options:
-            model: gemini-flash-latest
+            model: gemini-2.5-flash
     chat:
       options:
         model: gpt-3.5-turbo

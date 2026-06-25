@@ -88,3 +88,13 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Root Cause:** The `spring-ai-starter-model-google-genai` library (as of `1.1.8`) does not auto-configure an `EmbeddingModel` by default. Consequently, the `ChatModelConfig` correctly fell back to the `OpenAiEmbeddingModel`. When `ManualIngestionService` attempted to ingest manuals using `vectorStore.add(splitDocuments)`, the underlying OpenAI client fired. Even though our `catch` block intercepted the exception, `SpringAiRetryAutoConfiguration` intercepted the API failure first and logged the entire `HTTP 401` stack trace as a `WARN` during its retry loop.
 - **Fix:** Injected Spring's `Environment` directly into `ManualIngestionService.java`. We now explicitly check if `OPENAI_API_KEY` is present and valid before proceeding with `vectorStore.add()`. If it's missing or set to `sk-mock-key`, ingestion is skipped entirely with a clean log warning, preventing the OpenAI client from ever executing and throwing the messy stack trace.
 
+## 19. Gemini model-string 404 in 1.1.8 starter
+- **Issue:** Specifying `gemini-1.5-flash` directly in `application.yml` with `spring-ai-google-genai` 1.1.8 resulted in a `404 Not Found` because the model name is deprecated for the user's specific project/API key.
+- **Root Cause:** The v1beta API endpoints deprecated the `gemini-1.5-flash` model for the current key.
+- **Fix:** Removed the explicit model string in `application.yml` initially to allow fallback.
+
+## 20. Gemini 503 High Demand causing 429 Quota Exceeded via Retries
+- **Issue:** API returned `429 Too Many Requests (Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests)` even on the very first query to the Swarm Orchestrator.
+- **Root Cause:** Setting the model to `gemini-flash-latest` caused Google's API to dynamically map to the experimental `gemini-3.5-flash` preview model. That model experienced a `503 High Demand` spike globally. Spring AI's automatic `RetryTemplate` intercepted the 503 and rapidly retried the request multiple times in milliseconds, instantly burning through the Free Tier limit of 5 requests per minute for that experimental model.
+- **Fix:** Hardcoded the model to the stable `gemini-2.5-flash` in `application.yml` to ensure high rate limit thresholds (15 RPM) and to avoid 503 errors typical of preview/experimental models.
+

@@ -10,15 +10,15 @@ graph TD;
     ReactUI -->|HTTP POST| ChatController[Chat Controller]
     
     subgraph Swarm Orchestrator Module
-        ChatController --> SupervisorAgent[Supervisor Agent (Orchestrator)]
+        ChatController --> SupervisorAgent["Supervisor Agent (Orchestrator)"]
         SupervisorAgent -->|Thread 1| BillingClient[Billing MCP Client]
         SupervisorAgent -->|Thread 2| SupportAgent[Support Agent]
-        SupportAgent -.->|RAG Search| Vector[(Mock Vector Store)]
+        SupportAgent -.->|RAG Search| Vector[("Mock Vector Store")]
     end
     
     subgraph Billing MCP Server Module
         BillingClient -.->|MCP Protocol| BillingMCPServer[Billing MCP Server]
-        BillingMCPServer -.->|Tool Call| DB[(H2 SQL DB)]
+        BillingMCPServer -.->|Tool Call| DB[("H2 SQL DB")]
     end
     
     BillingClient --> Response[Unified Response]

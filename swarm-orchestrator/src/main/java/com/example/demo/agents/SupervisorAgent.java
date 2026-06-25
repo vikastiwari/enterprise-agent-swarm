@@ -14,12 +14,13 @@ public class SupervisorAgent {
 
     private final SupportAgent supportAgent;
     private final ChatClient chatClient;
+    private final ChatClient billingChatClient;
     private final HTNDagParser htnDagParser;
     private final EventLogRepository eventLogRepository;
     private final CausalArmorInterceptor causalArmor;
     private final DebateResolver debateResolver;
 
-    public SupervisorAgent(SupportAgent supportAgent, ChatClient.Builder chatClientBuilder, HTNDagParser htnDagParser, EventLogRepository eventLogRepository, CausalArmorInterceptor causalArmor, DebateResolver debateResolver) {
+    public SupervisorAgent(SupportAgent supportAgent, ChatClient.Builder chatClientBuilder, HTNDagParser htnDagParser, EventLogRepository eventLogRepository, CausalArmorInterceptor causalArmor, DebateResolver debateResolver, java.util.List<org.springframework.ai.tool.ToolCallback> tools) {
         this.supportAgent = supportAgent;
         this.htnDagParser = htnDagParser;
         this.eventLogRepository = eventLogRepository;
@@ -27,6 +28,10 @@ public class SupervisorAgent {
         this.debateResolver = debateResolver;
         this.chatClient = chatClientBuilder
             .defaultSystem("You are the Supervisor Agent. Given sub-task results, generate a final coherent response to the user.")
+            .build();
+        this.billingChatClient = chatClientBuilder
+            .defaultSystem("You are the Billing Agent. Provide concise billing information by using the billing tools available.")
+            .defaultToolCallbacks(tools)
             .build();
     }
 
@@ -61,7 +66,10 @@ public class SupervisorAgent {
                 logEvent("DISPATCH_TASK", "Agent: " + task.agent() + " | Task: " + task.instruction());
                 
                 if (task.agent().equals("BillingAgent")) {
-                    result = "Billing Data: Balance is $120.50";
+                    result = billingChatClient.prompt()
+                                .user("Invoke billing info tool for customer " + customerId)
+                                .call()
+                                .content();
                 } else if (task.agent().equals("SupportAgent")) {
                     result = supportAgent.resolveIssue(task.instruction());
                 }

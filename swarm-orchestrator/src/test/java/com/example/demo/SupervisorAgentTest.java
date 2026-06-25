@@ -17,7 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import org.springframework.test.context.ActiveProfiles;
+
 @SpringBootTest
+@ActiveProfiles("test")
 class SupervisorAgentTest {
 
     @Autowired
@@ -43,7 +46,7 @@ class SupervisorAgentTest {
         when(chatModel.call(any(Prompt.class)))
             .thenAnswer(invocation -> {
                 Prompt p = invocation.getArgument(0);
-                return new ChatResponse(List.of(new Generation(p.getContents())));
+                return new ChatResponse(List.of(new Generation(new org.springframework.ai.chat.messages.AssistantMessage(p.getContents()))));
             });
         
         String response = supervisorAgent.orchestrateUserRequest(customerId, request);

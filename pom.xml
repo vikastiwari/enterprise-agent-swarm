@@ -12,8 +12,8 @@
 	<description>Multi-module Enterprise Agent Swarm</description>
 
 	<modules>
-		<module>swarm-orchestrator</module>
 		<module>billing-mcp-server</module>
+		<module>swarm-orchestrator</module>
 	</modules>
 
 </project>

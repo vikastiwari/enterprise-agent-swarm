@@ -19,6 +19,10 @@
 - [x] **Phase 5: Automated Testing & Validation**
   - Setup Spring Boot Test context (`@SpringBootTest`).
   - Configure Mockito (`@MockitoBean`) to mock the `ChatModel` to prevent live LLM calls during CI/CD.
+- [x] **Phase 6: Spring AI 1.1.8 & MCP Stdio Integration**
+  - Upgraded both `swarm-orchestrator` and `billing-mcp-server` to Spring AI 1.1.8.
+  - Replaced legacy `ToolCallbackProvider` with native `spring-ai-mcp-client` auto-configuration.
+  - Successfully connected `SupervisorAgent` to `billing-mcp-server` via STDIO, exposing `getCustomerBillingInfo` as an MCP tool.
 
 ## Upcoming Phases
 - [ ] **### Phase 2: Next-Generation RAG & Knowledge Synthesis ✅

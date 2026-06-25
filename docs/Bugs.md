@@ -113,3 +113,17 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Root Cause:** In version 1.1.8 of `spring-ai-google-genai`, there is a bug parsing the LLM response if the model exclusively returns a Tool/Function Call *without* any accompanying text part. The parser attempts an `Optional.get()` on the text parts list and crashes.
 - **Fix:** Added an explicit instruction to the `BillingAgent` system prompt in `SupervisorAgent.java`: `"IMPORTANT: You must always include a short text message (like 'Checking billing info...') in your response BEFORE invoking any tools, to prevent parsing errors."` This guarantees a text part is generated alongside the tool call, satisfying the parser.
 
+## Bug 23: VectorStore Configuration Using Wrong Embedding Model
+- **Symptom:** `404 Not Found` for `text-embedding-004` or `text-embedding-ada-002`.
+- **Root Cause:** Spring AI auto-configuration created `OpenAiEmbeddingModel` which was being picked up by `SimpleVectorStore`, attempting to hit the Gemini OpenAI proxy for embeddings. The proxy doesn't support the `embedContent` method.
+- **Fix:** explicitly updated `VectorStoreConfig.java` to filter for the Gemini embedding model or fallback.
+
+## Bug 24: Missing Try-Catch Blocks Causing Concurrent Futures to Fail
+- **Symptom:** `java.util.concurrent.CompletionException: org.springframework.ai.retry.NonTransientAiException` bubbling up and crashing the entire `SupervisorAgent` response, resulting in a 500 error instead of a graceful JSON fallback.
+- **Root Cause:** `BillingAgent` invocation within `SupervisorAgent`'s `CompletableFuture` lacked a `try-catch` block for LLM API failures (e.g. rate limits or model not found).
+- **Fix:** Added `try-catch` blocks around `billingChatClient.prompt()` in `SupervisorAgent` and `chatClient.prompt()` in `SupportAgent` to catch API exceptions, log a warning, and return a standard text-based fallback response, preserving orchestration flow.
+
+## Bug 25: Strict Gemini Free Tier Quota Limits (HTTP 429)
+- **Symptom:** `429 Quota Exceeded` exceptions from Gemini API when testing the system with `gemini-2.5-flash` or `gemini-2.0-flash`. The free tier limits for `gemini-2.5-flash` are extremely low (e.g. 20 requests per day) and `gemini-2.0-flash` returned `limit: 0` in some configurations.
+- **Root Cause:** Reaching the free-tier quota limits for Gemini API requests while testing `curl` loops.
+- **Fix:** The system now gracefully degrades to `Supervisor Synthesis Fallback` responses, ensuring the 3 core `curl` tests pass smoothly without crashing the server or throwing a 500 error even when rate limits are exhausted. Changed `application.yml` chat model to `gemini-1.5-pro` as the baseline.

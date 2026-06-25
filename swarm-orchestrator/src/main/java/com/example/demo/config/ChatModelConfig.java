@@ -24,20 +24,7 @@ public class ChatModelConfig {
             log.info("- " + m.getClass().getSimpleName() + " (" + m.getClass().getName() + ")");
         }
 
-        String geminiKey = env.getProperty("GEMINI_API_KEY");
-        if (geminiKey != null && !geminiKey.trim().isEmpty()) {
-            log.info("GEMINI_API_KEY is present. Looking for Gemini ChatModel...");
-            for (ChatModel model : chatModels) {
-                if (model.getClass().getSimpleName().toLowerCase().contains("google") || 
-                    model.getClass().getSimpleName().toLowerCase().contains("gemini") || 
-                    model.getClass().getSimpleName().toLowerCase().contains("vertex")) {
-                    log.info("Found Gemini ChatModel: " + model.getClass().getSimpleName());
-                    return model;
-                }
-            }
-        }
-        
-        log.info("Falling back to OpenAI ChatModel...");
+        log.info("Bypassing GoogleGenAiChatModel due to 1.1.7 tool-calling bug. Forcing OpenAiChatModel pointing to Gemini OpenAI-compatible endpoint.");
         return chatModels.stream()
                 .filter(m -> m.getClass().getSimpleName().contains("OpenAi"))
                 .findFirst()
@@ -55,23 +42,13 @@ public class ChatModelConfig {
             log.info("- " + m.getClass().getSimpleName() + " (" + m.getClass().getName() + ")");
         }
 
-        String geminiKey = env.getProperty("GEMINI_API_KEY");
-        if (geminiKey != null && !geminiKey.trim().isEmpty()) {
-            log.info("GEMINI_API_KEY is present. Looking for Gemini EmbeddingModel...");
-            for (EmbeddingModel model : embeddingModels) {
-                if (model.getClass().getSimpleName().toLowerCase().contains("google") || 
-                    model.getClass().getSimpleName().toLowerCase().contains("gemini") || 
-                    model.getClass().getSimpleName().toLowerCase().contains("vertex")) {
-                    log.info("Found Gemini EmbeddingModel: " + model.getClass().getSimpleName());
-                    return model;
-                }
-            }
-        }
-        
-        log.info("Falling back to OpenAI EmbeddingModel...");
+        log.info("Forcing GoogleGenAiEmbeddingModel for embeddings.");
         return embeddingModels.stream()
-                .filter(m -> m.getClass().getSimpleName().contains("OpenAi"))
+                .filter(model -> model.getClass().getSimpleName().toLowerCase().contains("google") || 
+                                 model.getClass().getSimpleName().toLowerCase().contains("gemini") || 
+                                 model.getClass().getSimpleName().toLowerCase().contains("vertex"))
                 .findFirst()
                 .orElse(embeddingModels.get(0));
     }
+
 }

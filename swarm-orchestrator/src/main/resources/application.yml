@@ -16,10 +16,16 @@ spring:
                 - "-jar"
                 - "../billing-mcp-server/target/billing-mcp-server-0.0.1-SNAPSHOT.jar"
     openai:
-      api-key: ${OPENAI_API_KEY:sk-mock-key}
+      api-key: ${GEMINI_API_KEY}
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai/
+      chat:
+        options:
+          model: gemini-1.5-pro
+      embedding:
+        enabled: false
     google:
       genai:
-        api-key: ${GEMINI_API_KEY:sk-mock-key}
+        api-key: ${GEMINI_API_KEY}
         chat:
           options:
             model: gemini-2.5-flash

@@ -23,10 +23,10 @@ public class ChatController {
         
         try {
             String response = supervisorAgent.orchestrateUserRequest(customerId, message);
-            return Map.of("response", response);
+            return Map.of("response", response != null ? response : "Empty response from Supervisor");
         } catch (Exception e) {
             e.printStackTrace();
-            return Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getName());
+            return Map.of("error", e.getClass().getName() + ": " + e.getMessage());
         }
     }
 }

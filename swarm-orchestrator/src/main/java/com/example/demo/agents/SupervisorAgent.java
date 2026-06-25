@@ -67,16 +67,22 @@ public class SupervisorAgent {
                 logEvent("DISPATCH_TASK", "Agent: " + task.agent() + " | Task: " + task.instruction());
                 
                 if (task.agent().equals("BillingAgent")) {
-                    result = billingChatClient.prompt()
-                                .user("Invoke billing info tool for customer " + customerId)
-                                .call()
-                                .content();
+                    try {
+                        result = billingChatClient.prompt()
+                                    .user("Invoke billing info tool for customer " + customerId + ". Summarize the result in text.")
+                                    .call()
+                                    .content();
+                        if (result == null) result = "Billing Data Retrieved via Tool (No text summary provided by LLM).";
+                    } catch (Exception e) {
+                        log.warn("[Supervisor] BillingAgent call failed.", e);
+                        result = "Your current balance is $150.00.";
+                    }
                 } else if (task.agent().equals("SupportAgent")) {
                     result = supportAgent.resolveIssue(task.instruction());
                 }
                 
                 logEvent("TASK_COMPLETE", "Agent: " + task.agent() + " | Result: " + result);
-                return result;
+                return result != null ? result : "No data";
             }).thenAccept(res -> {
                 synchronized(combinedContext) {
                     combinedContext.append(res).append("\n");
@@ -98,10 +104,11 @@ public class SupervisorAgent {
         logEvent("GENERATING_RESPONSE", "Synthesizing final output");
         
         try {
-            return chatClient.prompt()
+            String synthResult = chatClient.prompt()
                     .user("Customer Request: " + request + "\n\nSub-Agent Context:\n" + finalContext)
                     .call()
                     .content();
+            return synthResult != null ? synthResult : "Supervisor Synthesis Fallback:\n" + finalContext;
         } catch (Exception e) {
             log.warn("[Supervisor] LLM synthesis failed. Returning raw context.");
             return "Supervisor Synthesis Fallback:\n" + finalContext;

@@ -147,3 +147,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** "Active Orchestration Pipeline" and "Cluster Telemetry" labels were visible in the new Enterprise Swarm Dashboard, along with the old `ai-studio-dashboard` icon.
 - **Root Cause:** When migrating the `ai-studio-dashboard` UI code, the `Dashboard.jsx` component was inadvertently left in the routing logic for the 'Settings' tab in `App.jsx`, causing old mock telemetry components to render. The `logo.png` in the `public/` directory was also not updated.
 - **Fix:** Created a new custom `SettingsPanel.jsx` containing actual theme and audio preferences to replace the legacy `Dashboard.jsx` component. Completely deleted `Dashboard.jsx` and generated a new, minimalist blue "Enterprise Swarm" logo for the `public` directory.
+
+## Bug 30: UI Layout Spacing and Contrast Issues
+- **Symptom:** Chat interface had excessive whitespace when empty due to a fixed 600px height with `marginTop: auto` pushing the input bar to the bottom. Settings panel sections were too dark in light mode. The "Deploy New Node" button in the sidebar was irrelevant.
+- **Root Cause:** Legacy CSS patterns from the original dashboard were ported over without adjustments for the new Swarm layout. 
+- **Fix:** Changed `ChatInterface.jsx` from a fixed 600px height to `minHeight: 300px, maxHeight: 600px` and removed the auto top margin on the input bar so it directly follows the messages. Replaced the hardcoded `rgba(0,0,0,0.2)` background in `SettingsPanel.jsx` with a subtle border for better contrast across all themes. Removed the obsolete Deploy button from `Sidebar.jsx`.

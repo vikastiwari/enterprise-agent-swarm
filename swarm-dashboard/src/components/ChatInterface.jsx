@@ -36,8 +36,8 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="glass-panel" style={{ height: '600px', display: 'flex', flexDirection: 'column', padding: '1rem' }}>
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1rem' }}>
+    <div className="glass-panel" style={{ minHeight: '300px', maxHeight: '600px', display: 'flex', flexDirection: 'column', padding: '1rem' }}>
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1.5rem' }}>
         {messages.map((msg) => (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -69,7 +69,7 @@ const ChatInterface = () => {
         )}
       </div>
       
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
         <input 
           type="text" 
           className="search-bar" 

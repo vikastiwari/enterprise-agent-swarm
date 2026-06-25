@@ -95,17 +95,7 @@ const Sidebar = ({ channels, activeChannel, setActiveChannel, onOpenWizard, isMo
       </div>
       
       <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-        <button 
-          onClick={() => {
-            playMenuClick();
-            onOpenWizard();
-          }}
-          style={{ width: '100%', marginBottom: '1.5rem', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'rgba(0, 240, 255, 0.1)', border: '1px solid var(--accent-cyan)', color: 'var(--accent-cyan)', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          className="glitch-hover"
-        >
-          <PlusCircle size={16} /> Deploy New Node
-        </button>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
           <span>Supervisor Hub</span>
           <span className="status-dot status-active"></span>
         </div>

@@ -20,7 +20,7 @@ const SettingsPanel = () => {
       <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
         
         {/* Appearance Settings */}
-        <div style={{ padding: '1.5rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '8px' }}>
+        <div style={{ padding: '1.5rem', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Appearance</h3>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -48,7 +48,7 @@ const SettingsPanel = () => {
         </div>
 
         {/* Feedback Settings */}
-        <div style={{ padding: '1.5rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '8px' }}>
+        <div style={{ padding: '1.5rem', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Feedback & Audio</h3>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

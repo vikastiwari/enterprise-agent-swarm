@@ -17,33 +17,47 @@ public class ChatModelConfig {
     @Primary
     public ChatModel primaryChatModel(
             Environment env,
-            @Qualifier("googleGenAiChatModel") org.springframework.beans.factory.ObjectProvider<ChatModel> geminiChatModelProvider,
-            @Qualifier("openAiChatModel") org.springframework.beans.factory.ObjectProvider<ChatModel> openAiChatModelProvider) {
+            java.util.List<ChatModel> chatModels) {
         
         String geminiKey = env.getProperty("GEMINI_API_KEY");
         if (geminiKey != null && !geminiKey.trim().isEmpty()) {
-            log.info("GEMINI_API_KEY is present. Using Gemini as the Primary ChatModel.");
-            return geminiChatModelProvider.getIfAvailable();
-        } else {
-            log.info("GEMINI_API_KEY is missing. Falling back to OpenAI as the Primary ChatModel.");
-            return openAiChatModelProvider.getIfAvailable();
+            log.info("GEMINI_API_KEY is present. Looking for Gemini ChatModel...");
+            for (ChatModel model : chatModels) {
+                if (model.getClass().getSimpleName().contains("GoogleGenAi") || model.getClass().getSimpleName().contains("VertexAi")) {
+                    log.info("Found Gemini ChatModel: " + model.getClass().getSimpleName());
+                    return model;
+                }
+            }
         }
+        
+        log.info("Falling back to OpenAI ChatModel...");
+        return chatModels.stream()
+                .filter(m -> m.getClass().getSimpleName().contains("OpenAi"))
+                .findFirst()
+                .orElse(chatModels.get(0));
     }
 
     @Bean
     @Primary
     public EmbeddingModel primaryEmbeddingModel(
             Environment env,
-            @Qualifier("googleGenAiEmbeddingModel") org.springframework.beans.factory.ObjectProvider<EmbeddingModel> geminiEmbeddingProvider,
-            @Qualifier("openAiEmbeddingModel") org.springframework.beans.factory.ObjectProvider<EmbeddingModel> openAiEmbeddingProvider) {
+            java.util.List<EmbeddingModel> embeddingModels) {
         
         String geminiKey = env.getProperty("GEMINI_API_KEY");
         if (geminiKey != null && !geminiKey.trim().isEmpty()) {
-            log.info("GEMINI_API_KEY is present. Using Gemini as the Primary EmbeddingModel.");
-            return geminiEmbeddingProvider.getIfAvailable();
-        } else {
-            log.info("GEMINI_API_KEY is missing. Falling back to OpenAI as the Primary EmbeddingModel.");
-            return openAiEmbeddingProvider.getIfAvailable();
+            log.info("GEMINI_API_KEY is present. Looking for Gemini EmbeddingModel...");
+            for (EmbeddingModel model : embeddingModels) {
+                if (model.getClass().getSimpleName().contains("GoogleGenAi") || model.getClass().getSimpleName().contains("VertexAi")) {
+                    log.info("Found Gemini EmbeddingModel: " + model.getClass().getSimpleName());
+                    return model;
+                }
+            }
         }
+        
+        log.info("Falling back to OpenAI EmbeddingModel...");
+        return embeddingModels.stream()
+                .filter(m -> m.getClass().getSimpleName().contains("OpenAi"))
+                .findFirst()
+                .orElse(embeddingModels.get(0));
     }
 }

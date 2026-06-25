@@ -20,5 +20,10 @@ spring:
       ddl-auto: create-drop
     show-sql: true
 
-# MCP Server Configuration (assuming standard properties)
-spring.ai.mcp.server.transport: sse
+  ai:
+    mcp:
+      server:
+        transport: stdio
+
+  main:
+    web-application-type: none

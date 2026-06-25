@@ -6,7 +6,8 @@ The **Enterprise Agent Swarm** is a robust, concurrent, multi-agent microservice
 ## 2. System Architecture
 ```mermaid
 graph TD;
-    User([End User / API Client]) -->|HTTP POST| ChatController[Chat Controller]
+    User([End User / API Client]) --> ReactUI[React Admin Dashboard]
+    ReactUI -->|HTTP POST| ChatController[Chat Controller]
     
     subgraph Swarm Orchestrator Module
         ChatController --> SupervisorAgent[Supervisor Agent (Orchestrator)]
@@ -22,7 +23,7 @@ graph TD;
     
     BillingClient --> Response[Unified Response]
     SupportAgent --> Response
-    Response --> User
+    Response --> ReactUI
 ```
 
 ## 3. Core Architectural Decisions
@@ -36,6 +37,7 @@ graph TD;
 **Solution:** We extracted the billing ledger logic into a completely separate microservice (`billing-mcp-server`). It communicates with the AI Orchestrator via the **Model Context Protocol (MCP)**. The LLM extracts parameters, the Orchestrator sends an MCP function execution request to the Billing Server, and the Billing Server securely queries its H2 DB and returns the deterministic result.
 
 ### 3.3. Isolation of Concerns
+- **React Frontend Dashboard:** A separate Node.js/Vite environment responsible only for telemetry visualization (HTN DAG) and user I/O.
 - **Billing MCP Server:** A strict, sandboxed Spring Boot module without any conversational logic, solely bonded to the `BillingTools`.
 - **Support Agent:** Cannot access financial data; strictly bonded to the technical documentation via RAG.
 - **Supervisor Agent:** Only responsible for understanding intent and parallel dispatching.

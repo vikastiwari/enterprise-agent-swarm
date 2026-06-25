@@ -53,9 +53,13 @@ To survive this, the architecture utilizes Spring AI Retry combined with a **Sup
 
 **Result**: A 100% success rate in answering user intents despite complete LLM generation failure at the synthesis layer.
 
-## 5. Conclusion
-The Enterprise Agent Swarm successfully proves that resilient, multi-agent systems can be built on standard enterprise frameworks (Spring Boot). By combining strict MCP boundaries, mathematical debate resolution, and iron-clad fallback logic, the orchestrator achieves what monolithic LLM applications cannot: distributed, verifiable, and highly available intelligence.
+## 5. Human-Swarm Interface (GUI)
+To surface the complexities of multi-agent reasoning, the system employs a React-based "Admin Chat Interface" containing:
+1. **Real-time Observability Panel**: Visualizes HTN DAG node activations and active Virtual Thread (Loom) counts.
+2. **Dynamic Streaming**: Connects directly to the Swarm Orchestrator (`/api/chat`) to render the Synthesis outputs or raw fallback payloads.
 
+## 6. Conclusion
+The Enterprise Agent Swarm successfully proves that resilient, multi-agent systems can be built on standard enterprise frameworks (Spring Boot). By combining strict MCP boundaries, mathematical debate resolution, glassmorphic observability dashboards, and iron-clad fallback logic, the orchestrator achieves what monolithic LLM applications cannot: distributed, verifiable, and highly available intelligence.
 ## 6. References & Resources
 1. **Spring AI Framework**: https://docs.spring.io/spring-ai/reference/ (Version 1.1.8)
 2. **Model Context Protocol (MCP)**: https://modelcontextprotocol.io/

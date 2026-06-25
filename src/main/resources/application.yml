@@ -1,6 +1,9 @@
 spring:
   application:
     name: enterprise-agent-swarm
+  threads:
+    virtual:
+      enabled: true
 
   datasource:
     url: jdbc:h2:mem:billingdb;DB_CLOSE_DELAY=-1

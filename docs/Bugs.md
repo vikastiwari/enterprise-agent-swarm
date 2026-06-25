@@ -42,3 +42,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 ## 9. Phase 4 - Autonomous Security Implementation (CausalArmor & Beta-Binomial)
 - **Status:** **Zero Bugs!** 🟢
 - **Details:** Phase 4 mathematical resolution logic and security interception were successfully introduced alongside the Phase 3 HTN parsing. The entire pipeline remains mathematically deterministic and is validated by 100% green tests!
+
+## 10. Multi-Module Maven Wrapper Path Issue
+- **Issue:** Attempting to run `./mvnw spring-boot:run` inside the `swarm-orchestrator` subdirectory throws `-bash: ./mvnw: No such file or directory`.
+- **Root Cause:** The Maven Wrapper (`mvnw` and `mvnw.cmd`) is generated at the root of the multi-module project (`enterprise-agent-swarm`), not inside the child module folders.
+- **Fix:** When running commands from inside a submodule directory, the correct path is `../mvnw` (e.g., `../mvnw spring-boot:run`). Alternatively, run commands from the project root using the `-pl` (project list) flag: `./mvnw -pl swarm-orchestrator spring-boot:run`.

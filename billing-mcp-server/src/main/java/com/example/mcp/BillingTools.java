@@ -23,8 +23,4 @@ public class BillingTools {
                 .orElse(new BillingResponse(0.0, "UNKNOWN", "Customer not found in database."));
     }
 
-    @Bean
-    public ToolCallbackProvider billingToolCallbackProvider() {
-        return MethodToolCallbackProvider.builder().toolObjects(this).build();
-    }
 }

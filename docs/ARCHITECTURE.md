@@ -8,17 +8,19 @@ The **Enterprise Agent Swarm** is a robust, concurrent, multi-agent microservice
 graph TD;
     User([End User / API Client]) -->|HTTP POST| ChatController[Chat Controller]
     
-    subgraph Spring Boot Backend
+    subgraph Swarm Orchestrator Module
         ChatController --> SupervisorAgent[Supervisor Agent (Orchestrator)]
-        
-        SupervisorAgent -->|Thread 1| BillingAgent[Billing Agent]
+        SupervisorAgent -->|Thread 1| BillingClient[Billing MCP Client]
         SupervisorAgent -->|Thread 2| SupportAgent[Support Agent]
-        
-        BillingAgent -.->|Tool Call| DB[(H2 SQL DB)]
         SupportAgent -.->|RAG Search| Vector[(Mock Vector Store)]
     end
     
-    BillingAgent --> Response[Unified Response]
+    subgraph Billing MCP Server Module
+        BillingClient -.->|MCP Protocol| BillingMCPServer[Billing MCP Server]
+        BillingMCPServer -.->|Tool Call| DB[(H2 SQL DB)]
+    end
+    
+    BillingClient --> Response[Unified Response]
     SupportAgent --> Response
     Response --> User
 ```
@@ -29,12 +31,12 @@ graph TD;
 **Problem:** Traditional AI microservices block OS threads waiting for LLM API responses (which take 2-10 seconds). This leads to thread exhaustion.
 **Solution:** The Supervisor Agent uses `CompletableFuture.supplyAsync()`, which in Java 21 maps to lightweight Virtual Threads. This allows the application to handle 10,000+ concurrent LLM requests on a standard JVM without blocking OS threads.
 
-### 3.2. Spring AI Tool Calling (Deterministic Execution)
-**Problem:** LLMs cannot be trusted to perform math or securely query billing ledgers.
-**Solution:** We use **Spring AI's `@Description`** annotation on Java `@Bean`s. The LLM does not execute SQL directly. Instead, it extracts the `customerId` from the prompt, hands it back to the Spring context via JSON, and the JVM executes a highly secure JPA query against the `BillingRepository`. The deterministic result is then fed back to the LLM.
+### 3.2. Model Context Protocol (MCP) Sandboxing
+**Problem:** LLMs cannot be trusted to perform math or securely query billing ledgers. Additionally, putting database credentials in the same application as conversational AI logic increases the attack surface.
+**Solution:** We extracted the billing ledger logic into a completely separate microservice (`billing-mcp-server`). It communicates with the AI Orchestrator via the **Model Context Protocol (MCP)**. The LLM extracts parameters, the Orchestrator sends an MCP function execution request to the Billing Server, and the Billing Server securely queries its H2 DB and returns the deterministic result.
 
 ### 3.3. Isolation of Concerns
-- **Billing Agent:** Cannot answer technical questions; strictly bonded to the `BillingTools`.
+- **Billing MCP Server:** A strict, sandboxed Spring Boot module without any conversational logic, solely bonded to the `BillingTools`.
 - **Support Agent:** Cannot access financial data; strictly bonded to the technical documentation via RAG.
 - **Supervisor Agent:** Only responsible for understanding intent and parallel dispatching.
 

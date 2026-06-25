@@ -28,4 +28,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 
 ## 7. Unique index or primary key violation on BILLING_RECORD during tests
 - **Issue:** Since multiple test classes loaded the Spring Application Context, `data.sql` was executing multiple times against the same H2 database. Because `hibernate.ddl-auto` was set to `update`, the old data remained, causing a primary key violation upon the second context load.
-- **Fix:** Changed `hibernate.ddl-auto` from `update` to `create-drop` in `application.yml` so that tables are dropped and recreated correctly for each fresh Spring Context.
+- **Fix:** Changed `hibernate.ddl-auto` from `create` to `create-drop` in `application.yml` so that tables are dropped and recreated correctly for each fresh Spring Context.
+
+## 8. Spring AI Milestone Incompatibility (MCP Client NoClassDefFoundError)
+- **Issue:** While refactoring to a multi-module architecture, we extracted `billing-mcp-server` and attempted to add `spring-ai-mcp-client` to `swarm-orchestrator`. However, `spring-ai-mcp-client` requires `1.0.0-M6`, which pulled in M6 core classes. The orchestrator's OpenAI client was still on `1.0.0-M1`, leading to a `NoClassDefFoundError: org/springframework/ai/tool/ToolCallbackProvider` because of massive interface changes between M1 and M6.
+- **Fix:** We reverted the MCP client injection from `swarm-orchestrator` and marked the final wiring step as blocked. We maintained the physical multi-module sandboxing (`billing-mcp-server` runs perfectly with M6), and will perform a unified bump to `1.0.0-M7/RC1` in the next phase.

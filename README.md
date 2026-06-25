@@ -12,39 +12,35 @@ This system bridges legacy JVM enterprise architectures with modern Generative A
 
 ## 📚 Documentation
 For a deep dive into the architecture and components, please review the following:
-- [Architecture Design](ARCHITECTURE.md)
-- [Component Specifications](COMPONENTS.md)
-- [Communication & IPC Strategy](COMMUNICATION.md)
-- [UI/UX Dashboard Blueprint](UI_UX_DESIGN.md)
-- [Project Roadmap](ROADMAP.md)
+- [Architecture Design](docs/ARCHITECTURE.md)
+- [Component Specifications](docs/COMPONENTS.md)
+- [Communication & IPC Strategy](docs/COMMUNICATION.md)
+- [UI/UX Dashboard Blueprint](docs/UI_UX_DESIGN.md)
+- [Project Roadmap](docs/ROADMAP.md)
 
 ## 🧠 Architecture: The "Enterprise Swarm"
 When a user submits a query, the system does not rely on a single, hallucination-prone monolithic LLM. Instead, it utilizes an Orchestrator pattern:
 
 1. **Supervisor Agent (`SupervisorAgent.java`)**: The master orchestrator. It intercepts natural language requests, breaks them down, and distributes sub-tasks concurrently to specialized worker agents using `CompletableFuture` running on Java 21 Virtual Threads.
-2. **Billing Agent (SQL Tool Calling)**: A specialized worker agent with exclusive access to the `BillingTools` class. It uses OpenAI Function Calling to securely execute deterministic logic (e.g., querying an H2 Database) to retrieve highly accurate financial records.
+2. **Billing MCP Server (Sandboxed)**: A specialized worker agent extracted into its own standalone microservice module. It uses the Model Context Protocol (MCP) to expose database queries (H2) without giving the Orchestrator direct data access.
 3. **Support Agent (RAG)**: A specialized worker agent dedicated to parsing IT Manuals and documentation to provide deterministic tech support.
 
 ```mermaid
 graph TD;
-    User([User Request]) -->|REST Endpoint| SpringBoot[Spring Boot 3 + Java 21]
+    User([User Request]) -->|REST Endpoint| SwarmOrchestrator[Swarm Orchestrator]
     
-    subgraph Enterprise Swarm
-        Supervisor[Supervisor Agent]
-        Billing[Billing Agent]
+    subgraph Multi-Module Architecture
+        SwarmOrchestrator
+        BillingMCPServer[Billing MCP Server]
         Support[Tech Support Agent]
         
-        SpringBoot --> Supervisor
-        Supervisor -- Concurrently Routes --> Billing
-        Supervisor -- Concurrently Routes --> Support
+        SwarmOrchestrator -- Concurrently Routes --> BillingClient
+        SwarmOrchestrator -- Concurrently Routes --> Support
         
-        Billing -.->|Function Call| DB[(H2 SQL Database)]
+        BillingClient -.->|MCP Protocol| BillingMCPServer
+        BillingMCPServer -.->|JPA| DB[(H2 SQL Database)]
         Support -.->|RAG| VectorDB[(Vector Store)]
     end
-    
-    Billing --> Aggregator[Aggregator]
-    Support --> Aggregator
-    Aggregator --> User
 ```
 
 ## 🛠️ Key Technologies
@@ -54,12 +50,22 @@ graph TD;
 - **Java 21 Project Loom:** Non-blocking Virtual Threads to ensure the Supervisor can handle hundreds of concurrent agent conversations without OS thread starvation.
 
 ## 🚀 Quick Start
-1. Add your OpenAI API key to `src/main/resources/application.yml` (or export it as `OPENAI_API_KEY`).
-2. Build and run the project:
+1. Add your OpenAI API key to `swarm-orchestrator/src/main/resources/application.yml` (or export it as `OPENAI_API_KEY`).
+2. Build the entire multi-module project:
    ```bash
-   ./mvnw clean spring-boot:run
+   ./mvnw clean install -DskipTests
    ```
-3. Test the Multi-Agent Orchestrator via REST:
+3. Boot up the **Billing MCP Server**:
+   ```bash
+   cd billing-mcp-server
+   ../mvnw spring-boot:run
+   ```
+4. In a separate terminal, boot up the **Swarm Orchestrator**:
+   ```bash
+   cd swarm-orchestrator
+   ../mvnw spring-boot:run
+   ```
+5. Test the Multi-Agent Orchestrator via REST:
    ```bash
    curl -X POST http://localhost:8080/api/chat \
    -H "Content-Type: application/json" \

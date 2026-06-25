@@ -3,12 +3,14 @@
 ## Completed Phases
 - [x] **Phase 1: Foundation & Bootstrapping**
   - Setup Spring Boot 3.3.5 with Java 21 Virtual Threads.
-  - Integrate Spring AI 1.0.0-M1 and configure OpenAI API access.
+  - Integrate Spring AI and configure OpenAI API access.
+  - Refactored into a **Multi-Module Maven architecture**.
 - [x] **Phase 2: Supervisor & Concurrency**
   - Implement `SupervisorAgent` utilizing `CompletableFuture` for non-blocking concurrent execution.
   - Setup REST API Controller for client integration.
-- [x] **Phase 3: Secure Tool Calling & Database**
-  - Implement the `BillingAgent` with Function Calling (`@Description` on `@Bean`).
+- [x] **Phase 3: Secure Tool Calling & Database (MCP Server)**
+  - Extracted the `BillingAgent` into an isolated `billing-mcp-server`.
+  - Configured Model Context Protocol (MCP) server integration (`spring-ai-mcp-server-webmvc`).
   - Configure H2 In-Memory Database and Spring Data JPA.
   - Seed initial dataset (`data.sql`) with test customer billing records.
 - [x] **Phase 4: Multi-Agent Specialization**

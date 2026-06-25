@@ -1,6 +1,8 @@
 package com.example.demo.agents;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,20 +12,18 @@ public class SupportAgent {
 
     private final ChatClient chatClient;
 
-    public SupportAgent(ChatClient.Builder chatClientBuilder) {
+    public SupportAgent(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
         this.chatClient = chatClientBuilder
-            .defaultSystem("You are a Tier 2 Enterprise Tech Support Agent. You have access to the IT manual. " +
-                           "Answer technical queries precisely and concisely.")
+            .defaultSystem("You are an IT Support Agent. Answer technical questions concisely based ONLY on the provided RAG context.")
+            .defaultAdvisors(new QuestionAnswerAdvisor(vectorStore, org.springframework.ai.vectorstore.SearchRequest.defaults()))
             .build();
     }
 
     public String resolveIssue(String technicalQuery) {
-        log.info("[Support Agent] Analyzing technical query: {}", technicalQuery);
-        // Mocking RAG search for IT Manual
-        String retrievedContext = "Mock IT Manual: To reset an EC2 password or IAM credentials, navigate to the AWS Console Security Hub and click 'Force Reset'.";
+        log.info("[Support Agent] Analyzing technical query via Vector Store: {}", technicalQuery);
         
         return chatClient.prompt()
-                .user("User Query: " + technicalQuery + "\n\nRetrieved Context: " + retrievedContext)
+                .user(technicalQuery)
                 .call()
                 .content();
     }

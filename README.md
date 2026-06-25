@@ -17,6 +17,7 @@ For a deep dive into the architecture and components, please review the followin
 - [Communication & IPC Strategy](docs/COMMUNICATION.md)
 - [UI/UX Dashboard Blueprint](docs/UI_UX_DESIGN.md)
 - [Project Roadmap](docs/ROADMAP.md)
+- [Bug Tracking](docs/Bugs.md)
 
 ## 🧠 Architecture: The "Enterprise Swarm"
 When a user submits a query, the system does not rely on a single, hallucination-prone monolithic LLM. Instead, it utilizes an Orchestrator pattern:

@@ -21,8 +21,12 @@ public class ChatController {
         String customerId = payload.getOrDefault("customerId", "CUST-1001");
         String message = payload.get("message");
         
-        String response = supervisorAgent.orchestrateUserRequest(customerId, message);
-        
-        return Map.of("response", response);
+        try {
+            String response = supervisorAgent.orchestrateUserRequest(customerId, message);
+            return Map.of("response", response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getName());
+        }
     }
 }

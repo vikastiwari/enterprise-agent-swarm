@@ -1,6 +1,5 @@
-package com.example.demo.repository;
+package com.example.mcp;
 
-import com.example.demo.model.BillingRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

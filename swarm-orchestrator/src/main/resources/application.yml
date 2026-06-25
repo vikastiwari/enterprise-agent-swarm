@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: swarm-orchestrator
+  threads:
+    virtual:
+      enabled: true
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-mock-key}
+      chat:
+        options:
+          model: gpt-3.5-turbo
+
+server:
+  port: 8080

@@ -1,6 +1,5 @@
-package com.example.demo.agents;
+package com.example.mcp;
 
-import com.example.demo.repository.BillingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

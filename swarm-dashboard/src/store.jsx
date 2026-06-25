@@ -42,10 +42,18 @@ export const useStore = create((set, get) => ({
   toasts: [],
   hftInterval: null,
   activeSimulations: {},
-  chatMessages: [
-    { id: 1, role: 'system', content: 'Connected to Enterprise Swarm. How can I assist you today?' }
-  ],
-  addChatMessage: (msg) => set((state) => ({ chatMessages: [...state.chatMessages, msg] })),
+  chatMessages: {
+    supervisor: [{ id: 1, role: 'system', content: 'Connected to Supervisor Agent. How can I assist you today?' }],
+    billing: [{ id: 1, role: 'system', content: 'Connected to Billing MCP Agent. Ask me about EC2 instances and invoices.' }],
+    support: [{ id: 1, role: 'system', content: 'Connected to Support RAG Agent. How can I help you resolve technical issues?' }],
+    sales: [{ id: 1, role: 'system', content: 'Connected to Sales Agent. I can help you with quotes and pricing.' }]
+  },
+  addChatMessage: (channelId, msg) => set((state) => ({ 
+    chatMessages: { 
+      ...state.chatMessages, 
+      [channelId]: [...(state.chatMessages[channelId] || []), msg] 
+    } 
+  })),
 
   addToast: (message, type = 'info') => {
     const id = Date.now() + Math.random();

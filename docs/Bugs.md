@@ -177,3 +177,8 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Symptom:** The chat interface displayed the raw JSON object `{"response": "..."}` instead of the extracted string.
 - **Root Cause:** `ChatInterface.jsx` called `await response.text()` on the HTTP request, which simply converted the Spring Boot `Map<String, String>` JSON output into a raw string, rather than parsing it.
 - **Fix:** Updated the fetch logic in `ChatInterface.jsx` to use `await response.json()` and correctly map `data.response` into the UI chat state.
+
+## Bug 36: Global Chat State Bleeding Across Agent Channels
+- **Symptom:** Clicking different agents in the left sidebar (Supervisor, Billing, Support, Sales) did not clear or change the chat window. All agents shared one single global chat history.
+- **Root Cause:** The global Zustand store maintained only a single flat array `chatMessages: []` rather than an object mapped to individual agent IDs.
+- **Fix:** Refactored `store.jsx` so that `chatMessages` is a dictionary keyed by `channelId` (e.g., `supervisor`, `billing`, `support`). Updated `App.jsx` to pass the `activeChannel` prop down to `ChatInterface.jsx`. `ChatInterface.jsx` now dynamically renders `chatMessages[activeChannel]` and dispatches new messages specifically to the active channel's array. Users now have 4 distinct, isolated chat instances.

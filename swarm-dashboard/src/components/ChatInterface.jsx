@@ -4,8 +4,9 @@ import { useSonicFeedback } from '../hooks/useSonicFeedback';
 import { motion } from 'framer-motion';
 import { useStore } from '../store';
 
-const ChatInterface = () => {
+const ChatInterface = ({ activeChannel }) => {
   const { chatMessages, addChatMessage } = useStore();
+  const currentMessages = chatMessages[activeChannel] || [];
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { playMenuClick } = useSonicFeedback();
@@ -15,7 +16,7 @@ const ChatInterface = () => {
     playMenuClick();
     
     const userMsg = { id: Date.now(), role: 'user', content: input };
-    addChatMessage(userMsg);
+    addChatMessage(activeChannel, userMsg);
     setInput('');
     setIsLoading(true);
 
@@ -26,9 +27,9 @@ const ChatInterface = () => {
         body: JSON.stringify({ customerId: 'CUST-1001', message: input })
       });
       const data = await response.json();
-      addChatMessage({ id: Date.now() + 1, role: 'bot', content: data.response || "No response received" });
+      addChatMessage(activeChannel, { id: Date.now() + 1, role: 'bot', content: data.response || "No response received" });
     } catch (e) {
-      addChatMessage({ id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' });
+      addChatMessage(activeChannel, { id: Date.now() + 1, role: 'error', content: 'Connection to Swarm Orchestrator failed.' });
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +38,7 @@ const ChatInterface = () => {
   return (
     <div className="glass-panel" style={{ minHeight: '300px', maxHeight: '600px', display: 'flex', flexDirection: 'column', padding: '1rem' }}>
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1.5rem' }}>
-        {chatMessages.map((msg) => (
+        {currentMessages.map((msg) => (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

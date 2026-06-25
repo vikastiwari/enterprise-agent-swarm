@@ -168,7 +168,7 @@ function App() {
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'chat' ? (
-                <ChatInterface />
+                <ChatInterface activeChannel={activeChannel} />
               ) : activeTab === 'observability' ? (
                 <ObservabilityPanel />
               ) : (

@@ -3,6 +3,8 @@ package com.example.demo.agents;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import com.example.demo.security.CausalArmorInterceptor;
+import com.example.demo.security.DebateResolver;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -14,11 +16,15 @@ public class SupervisorAgent {
     private final ChatClient chatClient;
     private final HTNDagParser htnDagParser;
     private final EventLogRepository eventLogRepository;
+    private final CausalArmorInterceptor causalArmor;
+    private final DebateResolver debateResolver;
 
-    public SupervisorAgent(SupportAgent supportAgent, ChatClient.Builder chatClientBuilder, HTNDagParser htnDagParser, EventLogRepository eventLogRepository) {
+    public SupervisorAgent(SupportAgent supportAgent, ChatClient.Builder chatClientBuilder, HTNDagParser htnDagParser, EventLogRepository eventLogRepository, CausalArmorInterceptor causalArmor, DebateResolver debateResolver) {
         this.supportAgent = supportAgent;
         this.htnDagParser = htnDagParser;
         this.eventLogRepository = eventLogRepository;
+        this.causalArmor = causalArmor;
+        this.debateResolver = debateResolver;
         this.chatClient = chatClientBuilder
             .defaultSystem("You are the Supervisor Agent. Given sub-task results, generate a final coherent response to the user.")
             .build();
@@ -36,6 +42,12 @@ public class SupervisorAgent {
         logEvent("RECEIVED_INTENT", "Customer " + customerId + " requested: " + request);
         log.info("[Supervisor] Orchestrating request for {}: {}", customerId, request);
 
+        // Security Layer: CausalArmor Interception
+        if (!causalArmor.isSafe(request)) {
+            logEvent("SECURITY_BLOCK", "IPI Detected in input");
+            return "Security Alert: Your request was blocked by CausalArmor due to policy violations.";
+        }
+
         // 1. Parse intent into an HTN DAG
         HTNDagParser.DagPlan plan = htnDagParser.parse(request);
         logEvent("HTN_DAG_GENERATED", "Tasks: " + plan.tasks().size());
@@ -49,7 +61,6 @@ public class SupervisorAgent {
                 logEvent("DISPATCH_TASK", "Agent: " + task.agent() + " | Task: " + task.instruction());
                 
                 if (task.agent().equals("BillingAgent")) {
-                    // For now, simulate BillingAgent MCP call
                     result = "Billing Data: Balance is $120.50";
                 } else if (task.agent().equals("SupportAgent")) {
                     result = supportAgent.resolveIssue(task.instruction());
@@ -66,16 +77,25 @@ public class SupervisorAgent {
 
         CompletableFuture.allOf(futures).join();
 
+        // Simulate conflict detection & debate resolution if multiple tasks occurred
+        String finalContext = combinedContext.toString();
+        if (plan.tasks().size() > 1 && finalContext.contains("Billing Data") && finalContext.contains("Support")) {
+            logEvent("DEBATE_DETECTED", "Resolving potential conflict via Beta-Binomial Mixture Model");
+            // Hardcoded resolution simulation: in a real scenario we'd pass their specific claims
+            String resolvedContext = debateResolver.resolveConflict("BillingAgent", "Billing Data: Balance is $120.50", "SupportAgent", "Support context: " + finalContext);
+            finalContext = "Debate Winner Context: " + resolvedContext + "\nCombined: " + finalContext;
+        }
+
         logEvent("GENERATING_RESPONSE", "Synthesizing final output");
         
         try {
             return chatClient.prompt()
-                    .user("Customer Request: " + request + "\n\nSub-Agent Context:\n" + combinedContext.toString())
+                    .user("Customer Request: " + request + "\n\nSub-Agent Context:\n" + finalContext)
                     .call()
                     .content();
         } catch (Exception e) {
             log.warn("[Supervisor] LLM synthesis failed. Returning raw context.");
-            return "Supervisor Synthesis Fallback:\n" + combinedContext.toString();
+            return "Supervisor Synthesis Fallback:\n" + finalContext;
         }
     }
 }

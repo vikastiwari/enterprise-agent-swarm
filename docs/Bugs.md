@@ -52,3 +52,18 @@ This document tracks all bugs encountered during the end-to-end testing phase an
 - **Issue:** The console throws a massive stack trace (`java.net.HttpRetryException: cannot retry due to server authentication`) during the `ManualIngestionService` initialization when `spring-boot:run` is executed.
 - **Root Cause:** Spring AI's `OpenAiEmbeddingModel` attempts to convert the Support Manuals into vector embeddings immediately when the application starts. If the `OPENAI_API_KEY` environment variable is not set (or is invalid), the OpenAI API rejects the request with an authentication error, crashing the ingestion process.
 - **Fix:** Export the API key in your terminal before running the application: `export OPENAI_API_KEY=sk-...` OR add it directly into `application.yml` under `spring.ai.openai.api-key`.
+
+## 12. Missing .env keys during spring-boot:run
+- **Issue:** The application prints `GEMINI_API_KEY is missing` and falls back to OpenAI despite the keys being set in the `.env` file.
+- **Root Cause:** When running `./mvnw spring-boot:run -pl swarm-orchestrator`, the working directory for the application JVM is set to `swarm-orchestrator/`, but the `.env` file was created at the root of the multi-module project.
+- **Fix:** Added `spring-dotenv` to `swarm-orchestrator/pom.xml` to enable automatic `.env` parsing, and created a symbolic link in the `swarm-orchestrator/` directory pointing to the root `.env` (`ln -s ../.env .env`).
+
+## 13. MismatchedInputException in StdioClientTransport (MCP Server)
+- **Issue:** The orchestrator's MCP client throws `MismatchedInputException: No content to map due to end-of-input` upon connecting to the `billing-mcp-server`.
+- **Root Cause:** The `billing-mcp-server` was writing Spring Boot startup logs (e.g., banner, Hibernate logs) directly to standard output (`System.out`). The MCP `stdio` transport strictly requires that `stdout` is reserved exclusively for JSON-RPC messages, meaning all logs must go to `stderr`.
+- **Fix:** Added a `logback-spring.xml` file to `billing-mcp-server/src/main/resources` that explicitly redirects the `ConsoleAppender` target to `System.err`.
+
+## 14. NoSuchBeanDefinitionException for EmbeddingModel (Gemini Fallback)
+- **Issue:** The test context failed to load throwing `NoSuchBeanDefinitionException: No qualifying bean of type 'org.springframework.ai.embedding.EmbeddingModel' available`.
+- **Root Cause:** In `ChatModelConfig.java`, we returned `geminiEmbeddingProvider.getIfAvailable()` when the Gemini API key was present. However, `spring-ai-starter-model-google-genai` does not auto-configure an `EmbeddingModel` the same way OpenAI does, so the `@Bean` returned `null`, leaving the context without a primary embedding model.
+- **Fix:** Refactored `ChatModelConfig.java` to inject `List<EmbeddingModel>` instead of `ObjectProvider`s. The configuration now searches the list for a Google/Vertex model dynamically, and gracefully falls back to the OpenAI model for embeddings if a Google embedding model is missing, allowing context initialization to succeed seamlessly.

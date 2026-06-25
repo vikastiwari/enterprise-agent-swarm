@@ -85,3 +85,10 @@ To test the entire Swarm Ecosystem locally, you will need 3 separate terminal ta
    ```
 
 Once all three are running, open your browser to **http://localhost:5173** (or the port Vite provides) to interact with the Swarm via the premium glassmorphic UI!
+
+## 🎨 Dashboard UI Features & Testing
+The React + Vite Dashboard has been engineered with enterprise-grade UX in mind. Be sure to test the following features:
+1. **Multi-Channel Chat:** Click on the different agents in the left sidebar (Supervisor, Billing, Support, Sales). Each agent maintains its own completely isolated, persistent chat history powered by a global Zustand store.
+2. **Dynamic Theming:** Open the `Settings` tab (Gear icon) and toggle the global themes (`Dark`, `Light`, `AMOLED`, `Cyberpunk`) to see the CSS variables dynamically swap the entire aesthetic.
+3. **Observability Telemetry:** Open the `Observability` tab to view real-time frontend telemetry simulation, tracking Virtual Threads and active MCP sessions connected to the backend.
+4. **Responsive Layouts:** Toggle `Compact Layout` in the settings to switch the entire application between a spacious glassmorphic UI and a data-dense, compact enterprise grid.
